@@ -3,7 +3,6 @@ package com.eva.securefiles;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -17,7 +16,7 @@ public class FileController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<FileMetadata> uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseEntity<FileMetadata> uploadFile(@RequestParam("file") MultipartFile file) throws Exception {
         FileMetadata saved = fileService.saveFile(file);
         return ResponseEntity.ok(saved);
     }

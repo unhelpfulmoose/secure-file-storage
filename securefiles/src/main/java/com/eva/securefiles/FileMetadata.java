@@ -14,6 +14,7 @@ public class FileMetadata {
     private String fileType;
     private String storagePath;
     private LocalDateTime uploadAt;
+    private String encryptionKey;
 
     public Long getId() {
         return id;
@@ -30,6 +31,9 @@ public class FileMetadata {
     public LocalDateTime getUploadAt() {
         return uploadAt;
     }
+    public String getEncryptionKey() {
+        return encryptionKey;
+    }
 
     public void setId(Long id) {
         this.id = id;
@@ -45,5 +49,8 @@ public class FileMetadata {
     }
     public void setUploadAt(LocalDateTime uploadAt) {
         this.uploadAt = uploadAt;
+    }
+    public void setEncryptionKey(String encryptionKey) {
+        this.encryptionKey = encryptionKey;
     }
 }
