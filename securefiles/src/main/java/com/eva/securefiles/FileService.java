@@ -56,4 +56,20 @@ public class FileService {
     public List<FileMetadata> getAllFiles() {
         return fileRepository.findAll();
     }
+
+    public FileMetadata getFileById(Long id) {
+        return fileRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("File not found."));
+    }
+
+    public byte[] downloadFile(Long id) throws Exception {
+        FileMetadata metadata = fileRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("File not found."));
+
+        byte[] encryptedData = Files.readAllBytes(Paths.get(metadata.getStoragePath()));
+        byte[] keyBytes = Base64.getDecoder().decode(metadata.getEncryptionKey());
+        SecretKey key = encryptionService.bytesToKey(keyBytes);
+
+        return encryptionService.decrypt(encryptedData, key);
+    }
 }

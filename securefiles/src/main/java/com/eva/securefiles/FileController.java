@@ -26,4 +26,15 @@ public class FileController {
         List<FileMetadata> files = fileService.getAllFiles();
         return ResponseEntity.ok(files);
     }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<byte[]> downloadFile(@PathVariable Long id) throws Exception {
+        FileMetadata metadata = fileService.getFileById(id);
+        byte[] decryptedData = fileService.downloadFile(id);
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"" + metadata.getFileName() + "\"")
+                .header("Content-Type", metadata.getFileType())
+                .body(decryptedData);
+    }
 }
