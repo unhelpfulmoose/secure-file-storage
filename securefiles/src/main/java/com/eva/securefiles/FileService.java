@@ -20,6 +20,11 @@ public class FileService {
     }
 
     public FileMetadata saveFile(MultipartFile file) throws IOException {
+        String contentType = file.getContentType();
+        if (contentType == null || contentType.equals("application/octet-stream")) {
+            throw new IllegalArgumentException("Invalid file type.");
+        }
+
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
