@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { setCredentials } from './api';
 
 interface Props {
-  onLogin: () => void;
+  onLogin: (username: string) => void;
 }
 
 function Login({ onLogin }: Props) {
@@ -16,7 +16,7 @@ function Login({ onLogin }: Props) {
       return;
     }
     setCredentials(username, password);
-    onLogin();
+    onLogin(username);
   };
 
   return (
