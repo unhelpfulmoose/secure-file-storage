@@ -25,8 +25,8 @@ public class FileService {
 
     public FileMetadata saveFile(MultipartFile file) throws Exception {
         String contentType = file.getContentType();
-        if (contentType == null || contentType.equals("application/octet-stream")) {
-            throw new IllegalArgumentException("Invalid file type.");
+        if (contentType == null || !isAllowedFileType(contentType)) {
+            throw new IllegalArgumentException("Invalid file type. Allowed types: PDF, images, text, audio, video.");
         }
 
         Path uploadPath = Paths.get(uploadDir);
@@ -60,6 +60,14 @@ public class FileService {
     public FileMetadata getFileById(Long id) {
         return fileRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("File not found."));
+    }
+
+    private boolean isAllowedFileType(String contentType) {
+        return contentType.startsWith("image/") ||
+                contentType.startsWith("audio/") ||
+                contentType.startsWith("video/") ||
+                contentType.equals("doc/pdf") ||
+                contentType.equals("text");
     }
 
     public byte[] downloadFile(Long id) throws Exception {
