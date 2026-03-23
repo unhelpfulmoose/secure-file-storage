@@ -1,5 +1,6 @@
-package com.eva.securefiles;
+package com.eva.securefiles.repository;
 
+import com.eva.securefiles.model.FileMetadata;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

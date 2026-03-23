@@ -1,5 +1,7 @@
-package com.eva.securefiles;
+package com.eva.securefiles.service;
 
+import com.eva.securefiles.model.FileMetadata;
+import com.eva.securefiles.repository.FileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 

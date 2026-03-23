@@ -1,4 +1,4 @@
-package com.eva.securefiles;
+package com.eva.securefiles.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

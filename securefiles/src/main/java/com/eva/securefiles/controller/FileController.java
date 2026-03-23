@@ -1,5 +1,7 @@
-package com.eva.securefiles;
+package com.eva.securefiles.controller;
 
+import com.eva.securefiles.model.FileMetadata;
+import com.eva.securefiles.service.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;

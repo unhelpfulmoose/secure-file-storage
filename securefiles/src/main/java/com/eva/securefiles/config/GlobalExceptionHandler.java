@@ -1,4 +1,4 @@
-package com.eva.securefiles;
+package com.eva.securefiles.config;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

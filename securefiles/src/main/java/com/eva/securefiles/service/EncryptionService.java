@@ -1,4 +1,4 @@
-package com.eva.securefiles;
+package com.eva.securefiles.service;
 
 import org.springframework.stereotype.Service;
 import javax.crypto.Cipher;
