@@ -68,8 +68,8 @@ public class FileService {
         return contentType.startsWith("image/") ||
                 contentType.startsWith("audio/") ||
                 contentType.startsWith("video/") ||
-                contentType.equals("doc/pdf") ||
-                contentType.equals("text");
+                contentType.equals("application/pdf") ||
+                contentType.equals("text/plain");
     }
 
     public byte[] downloadFile(Long id) throws Exception {

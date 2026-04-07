@@ -1,5 +1,6 @@
 package com.eva.securefiles.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,6 +17,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class SecurityConfig {
 
+    @Value("${app.admin.password}")
+    private String adminPassword;
+
+    @Value("${app.user.password}")
+    private String userPassword;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -25,13 +32,13 @@ public class SecurityConfig {
     public UserDetailsService userDetailsService(PasswordEncoder encoder) {
         var admin = User.builder()
                 .username("admin")
-                .password(encoder.encode("admin123"))
+                .password(encoder.encode(adminPassword))
                 .roles("ADMIN")
                 .build();
 
         var user = User.builder()
                 .username("user")
-                .password(encoder.encode("user123"))
+                .password(encoder.encode(userPassword))
                 .roles("USER")
                 .build();
 

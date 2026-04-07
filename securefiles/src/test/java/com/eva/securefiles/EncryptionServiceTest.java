@@ -37,4 +37,16 @@ import static org.junit.jupiter.api.Assertions.*;
             SecretKey key = encryptionService.generateKey();
             assertNotNull(key);
         }
+
+        @Test
+        void testSamePlaintextProducesDifferentCiphertext() throws Exception {
+            byte[] originalBytes = "Repeated content".getBytes();
+            SecretKey key = encryptionService.generateKey();
+
+            byte[] encrypted1 = encryptionService.encrypt(originalBytes, key);
+            byte[] encrypted2 = encryptionService.encrypt(originalBytes, key);
+
+            // Random IV means each encryption produces different output
+            assertFalse(java.util.Arrays.equals(encrypted1, encrypted2));
+        }
     }
