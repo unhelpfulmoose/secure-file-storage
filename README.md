@@ -33,7 +33,7 @@ Then follow the steps below to start all required services and run the app.
 - Java 21
 - Node.js 20+
 - Docker (for running PostgreSQL, MinIO, and Redis)
-- Maven — only needed if running from the terminal. If you use IntelliJ, you can skip this — the project includes `./mvnw`, a built-in Maven wrapper that works without a separate installation.
+- Maven
 
 ---
 
