@@ -3,8 +3,9 @@ Examensarbete Java24 — A full-stack application for securely uploading, storin
 
 ## Tech stack
 
-- **Backend**: Java 21, Spring Boot 3.4.3, Spring Security, Spring Data JPA
+- **Backend**: Java 21, Spring Boot 3.4.3, Spring Security (JWT), Spring Data JPA, Flyway
 - **Database**: PostgreSQL
+- **Storage**: MinIO (S3-compatible object store)
 - **Frontend**: React 19 + TypeScript, Vite, Axios
 
 ---
@@ -15,6 +16,7 @@ Examensarbete Java24 — A full-stack application for securely uploading, storin
 - Maven (or use the included `./mvnw`)
 - Node.js 18+
 - PostgreSQL running on `localhost:5434`
+- Docker (for running MinIO)
 
 ---
 
@@ -28,6 +30,11 @@ The application requires the following environment variables to be set before st
 | `ADMIN_PASSWORD` | Password for the built-in `admin` account |
 | `USER_PASSWORD` | Password for the built-in `user` account |
 | `JWT_SECRET` | Secret key used to sign JWT tokens — must be at least 32 characters |
+| `MASTER_ENCRYPTION_KEY` | Master key used to wrap per-file encryption keys (envelope encryption) |
+| `MINIO_ENDPOINT` | MinIO server URL, e.g. `http://localhost:9000` |
+| `MINIO_ACCESS_KEY` | MinIO access key |
+| `MINIO_SECRET_KEY` | MinIO secret key |
+| `MINIO_BUCKET` | MinIO bucket name, e.g. `securefiles` |
 
 Set them in your shell:
 
@@ -36,9 +43,43 @@ export DB_PASSWORD=your-db-password
 export ADMIN_PASSWORD=your-admin-password
 export USER_PASSWORD=your-user-password
 export JWT_SECRET=your-secret-key-min-32-characters
+export MASTER_ENCRYPTION_KEY=your-master-key-min-32-characters
+export MINIO_ENDPOINT=http://localhost:9000
+export MINIO_ACCESS_KEY=minioadmin
+export MINIO_SECRET_KEY=minioadmin
+export MINIO_BUCKET=securefiles
 ```
 
 The app will fail to start with a clear error if any of these are missing.
+
+---
+
+## Startup order
+
+Start services in this order — the backend will fail to start if either PostgreSQL or MinIO is not running:
+
+1. PostgreSQL
+2. MinIO
+3. Backend (`./mvnw spring-boot:run`)
+4. Frontend (`npm run dev`)
+
+---
+
+## Running MinIO
+
+MinIO is an open-source S3-compatible object store used to store encrypted files. Run it with Docker:
+
+```bash
+docker run -d \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  --name minio \
+  -e MINIO_ROOT_USER=minioadmin \
+  -e MINIO_ROOT_PASSWORD=minioadmin \
+  quay.io/minio/minio server /data --console-address ":9001"
+```
+
+The app automatically creates the bucket on startup if it doesn't exist. The MinIO console is available at `http://localhost:9001`.
 
 ---
 
@@ -65,10 +106,10 @@ The frontend will be available at `http://localhost:5173`.
 
 ## User roles
 
-| Role | Upload | Download / List |
-|------|--------|-----------------|
-| `admin` | yes | yes |
-| `user` | no | yes |
+| Role | Upload | Download / List | Delete |
+|------|--------|-----------------|--------|
+| `admin` | yes | yes | yes |
+| `user` | no | yes | no |
 
 ---
 

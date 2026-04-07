@@ -2,28 +2,36 @@ package com.eva.securefiles.service;
 
 import com.eva.securefiles.model.FileMetadata;
 import com.eva.securefiles.repository.FileRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.SecretKey;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.Base64;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import java.util.UUID;
 
 @Service
 public class FileService {
 
     private final FileRepository fileRepository;
     private final EncryptionService encryptionService;
-    private final String uploadDir = "uploads/";
+    private final StorageService storageService;
 
-    public FileService(FileRepository fileRepository, EncryptionService encryptionService) {
+    @Value("${app.master.key}")
+    private String masterKeyString;
+
+    public FileService(FileRepository fileRepository,
+                       EncryptionService encryptionService,
+                       StorageService storageService) {
         this.fileRepository = fileRepository;
         this.encryptionService = encryptionService;
+        this.storageService = storageService;
     }
 
     public FileMetadata saveFile(MultipartFile file) throws Exception {
@@ -32,26 +40,25 @@ public class FileService {
             throw new IllegalArgumentException("Invalid file type. Allowed types: PDF, images, text, audio, video.");
         }
 
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
+        // Generate a per-file AES key and encrypt the file
+        SecretKey fileKey = encryptionService.generateKey();
+        byte[] encryptedData = encryptionService.encrypt(file.getBytes(), fileKey);
 
-        SecretKey key = encryptionService.generateKey();
-        byte[] encryptedData = encryptionService.encrypt(file.getBytes(), key);
+        // Wrap the file key with the master key before storing in DB (envelope encryption)
+        SecretKey masterKey = deriveMasterKey();
+        byte[] wrappedKey = encryptionService.encrypt(fileKey.getEncoded(), masterKey);
+        String encodedWrappedKey = Base64.getEncoder().encodeToString(wrappedKey);
 
-        String fileName = file.getOriginalFilename();
-        Path filePath = uploadPath.resolve(fileName);
-        Files.write(filePath, encryptedData);
-
-        String encodedKey = Base64.getEncoder().encodeToString(key.getEncoded());
+        // Store encrypted file in MinIO under a UUID key
+        String storageKey = UUID.randomUUID().toString();
+        storageService.store(storageKey, encryptedData);
 
         FileMetadata metadata = new FileMetadata();
-        metadata.setFileName(fileName);
-        metadata.setFileType(file.getContentType());
-        metadata.setStoragePath(filePath.toString());
+        metadata.setFileName(file.getOriginalFilename());
+        metadata.setFileType(contentType);
+        metadata.setStorageKey(storageKey);
         metadata.setUploadAt(LocalDateTime.now());
-        metadata.setEncryptionKey(encodedKey);
+        metadata.setEncryptionKey(encodedWrappedKey);
 
         return fileRepository.save(metadata);
     }
@@ -65,18 +72,10 @@ public class FileService {
                 .orElseThrow(() -> new IllegalArgumentException("File not found."));
     }
 
-    private boolean isAllowedFileType(String contentType) {
-        return contentType.startsWith("image/") ||
-                contentType.startsWith("audio/") ||
-                contentType.startsWith("video/") ||
-                contentType.equals("application/pdf") ||
-                contentType.equals("text/plain");
-    }
-
     public void deleteFile(Long id) throws Exception {
         FileMetadata metadata = fileRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("File not found."));
-        Files.deleteIfExists(Paths.get(metadata.getStoragePath()));
+        storageService.delete(metadata.getStorageKey());
         fileRepository.delete(metadata);
     }
 
@@ -84,10 +83,27 @@ public class FileService {
         FileMetadata metadata = fileRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("File not found."));
 
-        byte[] encryptedData = Files.readAllBytes(Paths.get(metadata.getStoragePath()));
-        byte[] keyBytes = Base64.getDecoder().decode(metadata.getEncryptionKey());
-        SecretKey key = encryptionService.bytesToKey(keyBytes);
+        // Unwrap the file key using the master key
+        SecretKey masterKey = deriveMasterKey();
+        byte[] wrappedKey = Base64.getDecoder().decode(metadata.getEncryptionKey());
+        byte[] keyBytes = encryptionService.decrypt(wrappedKey, masterKey);
+        SecretKey fileKey = new SecretKeySpec(keyBytes, "AES");
 
-        return encryptionService.decrypt(encryptedData, key);
+        byte[] encryptedData = storageService.retrieve(metadata.getStorageKey());
+        return encryptionService.decrypt(encryptedData, fileKey);
+    }
+
+    private SecretKey deriveMasterKey() throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] keyBytes = digest.digest(masterKeyString.getBytes(StandardCharsets.UTF_8));
+        return new SecretKeySpec(keyBytes, "AES");
+    }
+
+    private boolean isAllowedFileType(String contentType) {
+        return contentType.startsWith("image/") ||
+                contentType.startsWith("audio/") ||
+                contentType.startsWith("video/") ||
+                contentType.equals("application/pdf") ||
+                contentType.equals("text/plain");
     }
 }
