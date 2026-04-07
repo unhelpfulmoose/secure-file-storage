@@ -4,11 +4,12 @@ import com.eva.securefiles.model.FileMetadata;
 import com.eva.securefiles.service.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.List;
 
 @RestController
 @RequestMapping("/files")
@@ -29,9 +30,19 @@ public class FileController {
     }
 
     @GetMapping
-    public ResponseEntity<List<FileMetadata>> getAllFiles() {
-        List<FileMetadata> files = fileService.getAllFiles();
-        return ResponseEntity.ok(files);
+    public ResponseEntity<Page<FileMetadata>> getAllFiles(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(fileService.getAllFiles(PageRequest.of(page, size)));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteFile(@PathVariable Long id, Authentication authentication) throws Exception {
+        FileMetadata metadata = fileService.getFileById(id);
+        fileService.deleteFile(id);
+        logger.info("User '{}' deleted file '{}' (id: {})",
+                authentication.getName(), metadata.getFileName(), id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}/download")

@@ -20,8 +20,15 @@ export const uploadFile = async (file: File) => {
     });
 };
 
-export const getFiles = async () => {
-    return axios.get(`${API_URL}/files`, { headers: authHeader() });
+export const getFiles = async (page = 0, size = 20) => {
+    return axios.get(`${API_URL}/files`, {
+        headers: authHeader(),
+        params: { page, size }
+    });
+};
+
+export const deleteFile = async (id: number) => {
+    return axios.delete(`${API_URL}/files/${id}`, { headers: authHeader() });
 };
 
 export const downloadFile = async (id: number) => {

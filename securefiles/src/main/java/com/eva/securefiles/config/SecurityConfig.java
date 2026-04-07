@@ -62,6 +62,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.POST, "/files/upload").hasRole("ADMIN")
+                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/files/{id}").hasRole("ADMIN")
                         .requestMatchers("/files/**").hasAnyRole("ADMIN", "USER")
                         .anyRequest().authenticated()
                 )

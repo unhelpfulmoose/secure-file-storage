@@ -11,7 +11,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class FileService {
@@ -55,8 +56,8 @@ public class FileService {
         return fileRepository.save(metadata);
     }
 
-    public List<FileMetadata> getAllFiles() {
-        return fileRepository.findAll();
+    public Page<FileMetadata> getAllFiles(Pageable pageable) {
+        return fileRepository.findAll(pageable);
     }
 
     public FileMetadata getFileById(Long id) {
@@ -70,6 +71,13 @@ public class FileService {
                 contentType.startsWith("video/") ||
                 contentType.equals("application/pdf") ||
                 contentType.equals("text/plain");
+    }
+
+    public void deleteFile(Long id) throws Exception {
+        FileMetadata metadata = fileRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("File not found."));
+        Files.deleteIfExists(Paths.get(metadata.getStoragePath()));
+        fileRepository.delete(metadata);
     }
 
     public byte[] downloadFile(Long id) throws Exception {
