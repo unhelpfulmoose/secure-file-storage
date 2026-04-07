@@ -16,7 +16,7 @@ Examensarbete Java24 — A full-stack application for securely uploading, storin
 - Maven (or use the included `./mvnw`)
 - Node.js 20+
 - PostgreSQL running on `localhost:5434`
-- Docker (for running MinIO)
+- Docker (for running MinIO and Redis)
 
 ---
 
@@ -62,7 +62,7 @@ The app will fail to start with a clear error if any of these are missing.
 
 ## Startup order
 
-Start services in this order — the backend will fail to start if either PostgreSQL or MinIO is not running:
+Start services in this order — the backend will fail to start if PostgreSQL, MinIO, or Redis is not running:
 
 1. PostgreSQL
 2. MinIO
