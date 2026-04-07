@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { setCredentials } from './api';
+import { login } from './api';
 
 interface Props {
-  onLogin: (username: string) => void;
+  onLogin: (username: string, role: string) => void;
 }
 
 function Login({ onLogin }: Props) {
@@ -10,13 +10,17 @@ function Login({ onLogin }: Props) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username || !password) {
       setError('Please enter username and password.');
       return;
     }
-    setCredentials(username, password);
-    onLogin(username);
+    try {
+      const data = await login(username, password);
+      onLogin(data.username, data.role);
+    } catch {
+      setError('Invalid username or password.');
+    }
   };
 
   return (

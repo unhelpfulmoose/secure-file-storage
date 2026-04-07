@@ -27,6 +27,7 @@ The application requires the following environment variables to be set before st
 | `DB_PASSWORD` | PostgreSQL password for the `postgres` user |
 | `ADMIN_PASSWORD` | Password for the built-in `admin` account |
 | `USER_PASSWORD` | Password for the built-in `user` account |
+| `JWT_SECRET` | Secret key used to sign JWT tokens — must be at least 32 characters |
 
 Set them in your shell:
 
@@ -34,6 +35,7 @@ Set them in your shell:
 export DB_PASSWORD=your-db-password
 export ADMIN_PASSWORD=your-admin-password
 export USER_PASSWORD=your-user-password
+export JWT_SECRET=your-secret-key-min-32-characters
 ```
 
 The app will fail to start with a clear error if any of these are missing.
