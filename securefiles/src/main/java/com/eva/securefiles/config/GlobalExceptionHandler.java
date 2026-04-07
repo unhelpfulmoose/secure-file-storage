@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import java.util.NoSuchElementException;
+
     @RestControllerAdvice
     public class GlobalExceptionHandler {
 
@@ -20,6 +22,13 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
         public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException e) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }
+
+        @ExceptionHandler(NoSuchElementException.class)
+        public ResponseEntity<String> handleNotFound(NoSuchElementException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
                     .body(e.getMessage());
         }
     }

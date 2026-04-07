@@ -18,6 +18,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -106,7 +107,7 @@ public class FileService {
 
     public FileMetadata getFileById(Long id) {
         return fileRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("File not found."));
+                .orElseThrow(() -> new NoSuchElementException("File not found."));
     }
 
     @Transactional
