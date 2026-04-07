@@ -2,6 +2,7 @@ package com.eva.securefiles.controller;
 
 import com.eva.securefiles.service.JwtService;
 import com.eva.securefiles.service.TokenDenylistService;
+import io.jsonwebtoken.JwtException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -49,10 +50,17 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authHeader) {
+        if (!authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.noContent().build();
+        }
         String token = authHeader.substring(7);
-        String jti = jwtService.extractJti(token);
-        long ttl = jwtService.getRemainingValiditySeconds(token);
-        tokenDenylistService.denyToken(jti, ttl);
+        try {
+            String jti = jwtService.extractJti(token);
+            long ttl = jwtService.getRemainingValiditySeconds(token);
+            tokenDenylistService.denyToken(jti, ttl);
+        } catch (JwtException e) {
+            // Token is already invalid — nothing to revoke
+        }
         return ResponseEntity.noContent().build();
     }
 }

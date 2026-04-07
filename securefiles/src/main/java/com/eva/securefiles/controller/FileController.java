@@ -33,6 +33,7 @@ public class FileController {
     public ResponseEntity<Page<FileMetadata>> getAllFiles(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
+        page = Math.max(0, page);
         size = Math.min(size, 100);
         return ResponseEntity.ok(fileService.getAllFiles(PageRequest.of(page, size)));
     }

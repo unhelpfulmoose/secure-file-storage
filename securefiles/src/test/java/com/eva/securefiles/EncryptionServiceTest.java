@@ -49,4 +49,16 @@ import static org.junit.jupiter.api.Assertions.*;
             // Random IV means each encryption produces different output
             assertFalse(java.util.Arrays.equals(encrypted1, encrypted2));
         }
+
+        @Test
+        void testDecryptWithWrongKeyThrowsException() throws Exception {
+            byte[] originalBytes = "secret data".getBytes();
+            SecretKey correctKey = encryptionService.generateKey();
+            SecretKey wrongKey = encryptionService.generateKey();
+
+            byte[] encrypted = encryptionService.encrypt(originalBytes, correctKey);
+
+            // AES-GCM authentication tag verification fails with wrong key
+            assertThrows(Exception.class, () -> encryptionService.decrypt(encrypted, wrongKey));
+        }
     }
