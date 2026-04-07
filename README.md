@@ -129,8 +129,8 @@ VITE_API_URL=http://your-backend-url
 
 ## User roles
 
-| Role | Upload | Download / List | Delete |
-|------|--------|-----------------|--------|
+| Role | Upload | List / Preview / Download | Delete |
+|------|--------|--------------------------|--------|
 | `admin` | yes | yes | yes |
 | `user` | no | yes | no |
 

@@ -60,4 +60,19 @@ public class FileController {
                 .header("Content-Type", metadata.getFileType())
                 .body(decryptedData);
     }
+
+    @GetMapping("/{id}/preview")
+    public ResponseEntity<byte[]> previewFile(@PathVariable Long id, Authentication authentication) throws Exception {
+        FileMetadata metadata = fileService.getFileById(id);
+        byte[] decryptedData = fileService.downloadFile(id);
+
+        logger.info("User '{}' previewed file '{}' (id: {})",
+                authentication.getName(), metadata.getFileName(), id);
+
+        String safeFileName = metadata.getFileName().replaceAll("[\\r\\n\"\\\\]", "_");
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "inline; filename=\"" + safeFileName + "\"")
+                .header("Content-Type", metadata.getFileType())
+                .body(decryptedData);
+    }
 }

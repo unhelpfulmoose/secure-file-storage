@@ -45,3 +45,10 @@ export const downloadFile = async (id: number) => {
         responseType: 'blob'
     });
 };
+
+export const previewFile = async (id: number) => {
+    return axios.get(`${API_URL}/files/${id}/preview`, {
+        headers: authHeader(),
+        responseType: 'blob'
+    });
+};

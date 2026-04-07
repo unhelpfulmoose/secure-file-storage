@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getFiles, downloadFile, deleteFile } from './api';
+import FilePreview from './FilePreview';
 
 interface FileMetadata {
   id: number;
@@ -17,6 +18,7 @@ function FileList({ canDelete = false }: Props) {
   const [message, setMessage] = useState('');
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [previewFile, setPreviewFile] = useState<FileMetadata | null>(null);
 
   useEffect(() => {
     fetchFiles(page);
@@ -59,6 +61,14 @@ function FileList({ canDelete = false }: Props) {
 
   return (
     <div>
+      {previewFile && (
+        <FilePreview
+          id={previewFile.id}
+          fileName={previewFile.fileName}
+          fileType={previewFile.fileType}
+          onClose={() => setPreviewFile(null)}
+        />
+      )}
       <h3>Files</h3>
       {message && <p style={{ color: 'red' }}>{message}</p>}
       {files.length === 0 ? (
@@ -81,6 +91,7 @@ function FileList({ canDelete = false }: Props) {
                   <td style={{ padding: '0.5rem' }}>{file.fileType}</td>
                   <td style={{ padding: '0.5rem' }}>{new Date(file.uploadAt).toLocaleDateString()}</td>
                   <td style={{ padding: '0.5rem', display: 'flex', gap: '0.5rem' }}>
+                    <button onClick={() => setPreviewFile(file)}>Open</button>
                     <button onClick={() => handleDownload(file.id, file.fileName)}>Download</button>
                     {canDelete && (
                       <button onClick={() => handleDelete(file.id, file.fileName)} style={{ color: 'red' }}>
