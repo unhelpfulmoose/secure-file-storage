@@ -102,6 +102,12 @@ npm run dev
 
 The frontend will be available at `http://localhost:5173`.
 
+By default the frontend points to `http://localhost:8080`. To use a different backend URL, create a `frontend/.env.local` file:
+
+```
+VITE_API_URL=http://your-backend-url
+```
+
 ---
 
 ## User roles

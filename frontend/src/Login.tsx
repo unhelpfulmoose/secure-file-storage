@@ -41,6 +41,7 @@ function Login({ onLogin }: Props) {
           placeholder="Password"
           value={password}
           onChange={e => setPassword(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleLogin()}
           style={{ display: 'block', marginBottom: '1rem', width: '100%', padding: '0.5rem' }}
         />
         <button onClick={handleLogin} style={{ width: '100%', padding: '0.5rem' }}>
