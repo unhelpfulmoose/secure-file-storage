@@ -35,6 +35,7 @@ The application requires the following environment variables to be set before st
 | `MINIO_ACCESS_KEY` | MinIO access key |
 | `MINIO_SECRET_KEY` | MinIO secret key |
 | `MINIO_BUCKET` | MinIO bucket name, e.g. `securefiles` |
+| `CORS_ORIGIN` | Allowed frontend origin, e.g. `http://localhost:5173` |
 
 Set them in your shell:
 
@@ -48,6 +49,7 @@ export MINIO_ENDPOINT=http://localhost:9000
 export MINIO_ACCESS_KEY=minioadmin
 export MINIO_SECRET_KEY=minioadmin
 export MINIO_BUCKET=securefiles
+export CORS_ORIGIN=http://localhost:5173
 ```
 
 The app will fail to start with a clear error if any of these are missing.

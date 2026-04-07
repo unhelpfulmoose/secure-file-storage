@@ -27,6 +27,9 @@ public class SecurityConfig {
     @Value("${app.user.password}")
     private String userPassword;
 
+    @Value("${app.cors.origin}")
+    private String corsOrigin;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -74,7 +77,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(java.util.List.of("http://localhost:5173"));
+        config.setAllowedOrigins(java.util.List.of(corsOrigin));
         config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE"));
         config.setAllowedHeaders(java.util.List.of("*"));
         config.setAllowCredentials(true);
