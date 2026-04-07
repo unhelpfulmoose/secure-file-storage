@@ -31,10 +31,9 @@ Then follow the steps below to start all required services and run the app.
 ## Prerequisites
 
 - Java 21
-- Maven (or use the included `./mvnw`)
 - Node.js 20+
-- PostgreSQL running on `localhost:5434`
-- Docker (for running MinIO and Redis)
+- Docker (for running PostgreSQL, MinIO, and Redis)
+- Maven — only needed if running from the terminal. If you use IntelliJ, you can skip this — the project includes `./mvnw`, a built-in Maven wrapper that works without a separate installation.
 
 ---
 
@@ -48,7 +47,7 @@ The application requires the following environment variables to be set before st
 | `ADMIN_PASSWORD` | Password for the built-in `admin` account |
 | `USER_PASSWORD` | Password for the built-in `user` account |
 | `JWT_SECRET` | Secret key used to sign JWT tokens — must be at least 32 characters |
-| `MASTER_ENCRYPTION_KEY` | Master key used to wrap per-file encryption keys (envelope encryption) |
+| `MASTER_ENCRYPTION_KEY` | A secret key used to protect the encryption keys for each file — treat it like a strong password, min 32 characters |
 | `MINIO_ENDPOINT` | MinIO server URL, e.g. `http://localhost:9000` |
 | `MINIO_ACCESS_KEY` | MinIO access key |
 | `MINIO_SECRET_KEY` | MinIO secret key |
@@ -57,7 +56,36 @@ The application requires the following environment variables to be set before st
 | `REDIS_HOST` | Redis server hostname, e.g. `localhost` |
 | `REDIS_PORT` | Redis server port, e.g. `6379` |
 
-Set them in your shell:
+### Option A — IntelliJ (recommended for backend)
+
+You set the variables once in IntelliJ and they are used every time you run the backend from there.
+
+1. Open the `securefiles/` project in IntelliJ
+2. Click **Run → Edit Configurations...**
+3. Select your Spring Boot run configuration (or create one if it doesn't exist: click **+** → **Spring Boot**, set Main class to `com.eva.securefiles.SecurefilesApplication`)
+4. Find the **Environment variables** field and click the icon on the right to open the editor
+5. Add each variable as `NAME=value`:
+
+```
+DB_PASSWORD=your-db-password
+ADMIN_PASSWORD=your-admin-password
+USER_PASSWORD=your-user-password
+JWT_SECRET=your-secret-key-min-32-characters
+MASTER_ENCRYPTION_KEY=your-master-key-min-32-characters
+MINIO_ENDPOINT=http://localhost:9000
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_BUCKET=securefiles
+CORS_ORIGIN=http://localhost:5173
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+6. Click **OK**
+
+### Option B — Terminal
+
+If you prefer the terminal, run these export commands before starting the backend. Note that they only last for the current terminal session — you'll need to run them again if you open a new terminal.
 
 ```bash
 export DB_PASSWORD=your-db-password
@@ -85,8 +113,8 @@ Start services in this order — the backend will fail to start if PostgreSQL, M
 1. PostgreSQL
 2. MinIO
 3. Redis
-4. Backend (`./mvnw spring-boot:run`)
-5. Frontend (`npm run dev`)
+4. Backend — press the green play button in IntelliJ, or run `./mvnw spring-boot:run` in the terminal from the `securefiles/` folder
+5. Frontend — run `npm run dev` in a terminal (VS Code's built-in terminal works well) from the `frontend/` folder
 
 ---
 
@@ -137,6 +165,9 @@ The app automatically creates the bucket on startup if it doesn't exist. The Min
 
 ## Running the backend
 
+**IntelliJ:** Press the green play button. Make sure your run configuration has all environment variables set (see above).
+
+**Terminal:**
 ```bash
 cd securefiles
 ./mvnw spring-boot:run
@@ -144,13 +175,25 @@ cd securefiles
 
 The API will be available at `http://localhost:8080`.
 
+---
+
 ## Running the frontend
 
+**VS Code:** Open the `frontend/` folder, then open the built-in terminal (**Terminal → New Terminal**) and run:
+
+```bash
+npm install
+npm run dev
+```
+
+**Any terminal:**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+
+`npm install` only needs to be run once (or after pulling new changes). After that, `npm run dev` is enough.
 
 The frontend will be available at `http://localhost:5173`.
 
@@ -198,6 +241,9 @@ If the backend fails to start, check that all environment variables are set and 
 
 Tests require a live PostgreSQL instance and the following environment variables to be set: `DB_PASSWORD`, `ADMIN_PASSWORD`, `USER_PASSWORD`, `JWT_SECRET`.
 
+**IntelliJ:** Right-click the `src/test` folder and choose **Run All Tests**. Make sure your run configuration has the required environment variables set.
+
+**Terminal:**
 ```bash
 cd securefiles
 ./mvnw test
