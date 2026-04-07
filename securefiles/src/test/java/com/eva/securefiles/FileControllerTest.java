@@ -1,6 +1,7 @@
 package com.eva.securefiles;
 
 import com.eva.securefiles.service.StorageService;
+import com.eva.securefiles.service.TokenDenylistService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -21,6 +22,9 @@ class FileControllerTest {
 
     @MockBean
     private StorageService storageService;
+
+    @MockBean
+    private TokenDenylistService tokenDenylistService;
 
     @Test
     @WithMockUser(username = "admin", roles = "ADMIN")

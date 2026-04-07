@@ -11,8 +11,8 @@ function App() {
     setRole(role);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setRole(null);
   };
 

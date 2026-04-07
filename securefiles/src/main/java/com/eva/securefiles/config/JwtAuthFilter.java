@@ -1,6 +1,7 @@
 package com.eva.securefiles.config;
 
 import com.eva.securefiles.service.JwtService;
+import com.eva.securefiles.service.TokenDenylistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,10 +21,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
+    private final TokenDenylistService tokenDenylistService;
 
-    public JwtAuthFilter(JwtService jwtService, UserDetailsService userDetailsService) {
+    public JwtAuthFilter(JwtService jwtService,
+                         UserDetailsService userDetailsService,
+                         TokenDenylistService tokenDenylistService) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.tokenDenylistService = tokenDenylistService;
     }
 
     @Override
@@ -41,6 +46,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String username = jwtService.extractUsername(token);
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            // Reject tokens that have been explicitly revoked via logout
+            String jti = jwtService.extractJti(token);
+            if (tokenDenylistService.isDenied(jti)) {
+                chain.doFilter(request, response);
+                return;
+            }
+
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             if (jwtService.isTokenValid(token, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(

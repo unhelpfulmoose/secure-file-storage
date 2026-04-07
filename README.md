@@ -36,6 +36,8 @@ The application requires the following environment variables to be set before st
 | `MINIO_SECRET_KEY` | MinIO secret key |
 | `MINIO_BUCKET` | MinIO bucket name, e.g. `securefiles` |
 | `CORS_ORIGIN` | Allowed frontend origin, e.g. `http://localhost:5173` |
+| `REDIS_HOST` | Redis server hostname, e.g. `localhost` |
+| `REDIS_PORT` | Redis server port, e.g. `6379` |
 
 Set them in your shell:
 
@@ -50,6 +52,8 @@ export MINIO_ACCESS_KEY=minioadmin
 export MINIO_SECRET_KEY=minioadmin
 export MINIO_BUCKET=securefiles
 export CORS_ORIGIN=http://localhost:5173
+export REDIS_HOST=localhost
+export REDIS_PORT=6379
 ```
 
 The app will fail to start with a clear error if any of these are missing.
@@ -62,8 +66,19 @@ Start services in this order — the backend will fail to start if either Postgr
 
 1. PostgreSQL
 2. MinIO
-3. Backend (`./mvnw spring-boot:run`)
-4. Frontend (`npm run dev`)
+3. Redis
+4. Backend (`./mvnw spring-boot:run`)
+5. Frontend (`npm run dev`)
+
+---
+
+## Running Redis
+
+Redis is used to store revoked JWT tokens so logout takes effect immediately.
+
+```bash
+docker run -d -p 6379:6379 --name redis redis:7
+```
 
 ---
 
