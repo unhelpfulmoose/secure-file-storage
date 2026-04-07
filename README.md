@@ -14,7 +14,7 @@ Examensarbete Java24 — A full-stack application for securely uploading, storin
 
 - Java 21
 - Maven (or use the included `./mvnw`)
-- Node.js 18+
+- Node.js 20+
 - PostgreSQL running on `localhost:5434`
 - Docker (for running MinIO)
 
@@ -120,6 +120,8 @@ VITE_API_URL=http://your-backend-url
 ---
 
 ## Running tests
+
+Tests require a live PostgreSQL instance and the following environment variables to be set: `DB_PASSWORD`, `ADMIN_PASSWORD`, `USER_PASSWORD`, `JWT_SECRET`.
 
 ```bash
 cd securefiles
