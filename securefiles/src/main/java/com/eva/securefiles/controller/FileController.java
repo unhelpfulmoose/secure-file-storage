@@ -33,6 +33,7 @@ public class FileController {
     public ResponseEntity<Page<FileMetadata>> getAllFiles(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
+        size = Math.min(size, 100);
         return ResponseEntity.ok(fileService.getAllFiles(PageRequest.of(page, size)));
     }
 
@@ -53,8 +54,9 @@ public class FileController {
         logger.info("User '{}' downloaded file '{}' (id: {})",
                 authentication.getName(), metadata.getFileName(), id);
 
+        String safeFileName = metadata.getFileName().replaceAll("[\\r\\n\"\\\\]", "_");
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=\"" + metadata.getFileName() + "\"")
+                .header("Content-Disposition", "attachment; filename=\"" + safeFileName + "\"")
                 .header("Content-Type", metadata.getFileType())
                 .body(decryptedData);
     }

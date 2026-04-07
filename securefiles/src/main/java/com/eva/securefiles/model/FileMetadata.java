@@ -1,5 +1,6 @@
 package com.eva.securefiles.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -13,10 +14,13 @@ public class FileMetadata {
     private String fileName;
     private String fileType;
 
+    @JsonIgnore
     @Column(name = "storage_key")
     private String storageKey;
 
     private LocalDateTime uploadAt;
+
+    @JsonIgnore
     private String encryptionKey;
 
     public Long getId() { return id; }
