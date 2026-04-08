@@ -123,12 +123,7 @@ Start services in this order — the backend will fail to start if PostgreSQL, M
 The app expects PostgreSQL on port `5434` (not the default 5432 — this avoids conflicts if you already have PostgreSQL installed). Run it with Docker:
 
 ```bash
-docker run -d \
-  -p 5434:5432 \
-  --name postgres \
-  -e POSTGRES_PASSWORD=your-db-password \
-  -e POSTGRES_DB=securefiles \
-  postgres:16
+docker run -d -p 5434:5432 --name postgres -e POSTGRES_PASSWORD=your-db-password -e POSTGRES_DB=securefiles postgres:16
 ```
 
 Replace `your-db-password` with whatever you set for `DB_PASSWORD`. The app connects as user `postgres` to a database named `securefiles`. Flyway will create the tables automatically on first startup.
