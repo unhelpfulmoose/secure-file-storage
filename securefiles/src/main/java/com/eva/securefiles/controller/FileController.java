@@ -1,9 +1,8 @@
 package com.eva.securefiles.controller;
 
 import com.eva.securefiles.model.FileMetadata;
+import com.eva.securefiles.service.AuditService;
 import com.eva.securefiles.service.FileService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
@@ -15,17 +14,19 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/files")
 public class FileController {
 
-    private static final Logger logger = LoggerFactory.getLogger(FileController.class);
-
     private final FileService fileService;
+    private final AuditService auditService;
 
-    public FileController(FileService fileService) {
+    public FileController(FileService fileService, AuditService auditService) {
         this.fileService = fileService;
+        this.auditService = auditService;
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<FileMetadata> uploadFile(@RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<FileMetadata> uploadFile(@RequestParam("file") MultipartFile file,
+                                                   Authentication authentication) throws Exception {
         FileMetadata saved = fileService.saveFile(file);
+        auditService.fileUploaded(authentication.getName(), saved.getFileName(), saved.getId());
         return ResponseEntity.ok(saved);
     }
 
@@ -42,8 +43,7 @@ public class FileController {
     public ResponseEntity<Void> deleteFile(@PathVariable Long id, Authentication authentication) throws Exception {
         FileMetadata metadata = fileService.getFileById(id);
         fileService.deleteFile(id);
-        logger.info("User '{}' deleted file '{}' (id: {})",
-                authentication.getName(), metadata.getFileName(), id);
+        auditService.fileDeleted(authentication.getName(), metadata.getFileName(), id);
         return ResponseEntity.noContent().build();
     }
 
@@ -52,8 +52,7 @@ public class FileController {
         FileMetadata metadata = fileService.getFileById(id);
         byte[] decryptedData = fileService.downloadFile(id);
 
-        logger.info("User '{}' downloaded file '{}' (id: {})",
-                authentication.getName(), metadata.getFileName(), id);
+        auditService.fileDownloaded(authentication.getName(), metadata.getFileName(), id);
 
         String safeFileName = metadata.getFileName().replaceAll("[\\r\\n\"\\\\]", "_");
         return ResponseEntity.ok()
@@ -67,8 +66,7 @@ public class FileController {
         FileMetadata metadata = fileService.getFileById(id);
         byte[] decryptedData = fileService.downloadFile(id);
 
-        logger.info("User '{}' previewed file '{}' (id: {})",
-                authentication.getName(), metadata.getFileName(), id);
+        auditService.filePreviewed(authentication.getName(), metadata.getFileName(), id);
 
         String safeFileName = metadata.getFileName().replaceAll("[\\r\\n\"\\\\]", "_");
         return ResponseEntity.ok()
