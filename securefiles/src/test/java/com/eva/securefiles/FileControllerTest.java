@@ -92,4 +92,26 @@ class FileControllerTest {
         mockMvc.perform(multipart("/files/upload").file(file))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void testPreviewNonExistentFileReturns404() throws Exception {
+        mockMvc.perform(get("/files/99999/preview"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "user", roles = "USER")
+    void testDownloadAsUserIsNotForbidden() throws Exception {
+        // Users are allowed to download — response is 404 (file doesn't exist) not 403 (forbidden)
+        mockMvc.perform(get("/files/99999/download"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void testDeleteNonExistentFileReturns404() throws Exception {
+        mockMvc.perform(delete("/files/99999"))
+                .andExpect(status().isNotFound());
+    }
 }
