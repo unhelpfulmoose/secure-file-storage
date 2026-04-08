@@ -1,5 +1,6 @@
 package com.eva.securefiles.config;
 
+import com.eva.securefiles.service.AuditService;
 import com.eva.securefiles.service.JwtService;
 import com.eva.securefiles.service.TokenDenylistService;
 import io.jsonwebtoken.JwtException;
@@ -23,13 +24,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final TokenDenylistService tokenDenylistService;
+    private final AuditService auditService;
 
     public JwtAuthFilter(JwtService jwtService,
                          UserDetailsService userDetailsService,
-                         TokenDenylistService tokenDenylistService) {
+                         TokenDenylistService tokenDenylistService,
+                         AuditService auditService) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
         this.tokenDenylistService = tokenDenylistService;
+        this.auditService = auditService;
     }
 
     @Override
@@ -48,6 +52,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             username = jwtService.extractUsername(token);
         } catch (JwtException e) {
+            auditService.invalidToken(request.getRemoteAddr());
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
             return;
         }
@@ -56,6 +61,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             // Reject tokens that have been explicitly revoked via logout
             String jti = jwtService.extractJti(token);
             if (tokenDenylistService.isDenied(jti)) {
+                auditService.revokedToken(username, request.getRemoteAddr());
                 chain.doFilter(request, response);
                 return;
             }

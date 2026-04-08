@@ -25,9 +25,14 @@ public class FileController {
     @PostMapping("/upload")
     public ResponseEntity<FileMetadata> uploadFile(@RequestParam("file") MultipartFile file,
                                                    Authentication authentication) throws Exception {
-        FileMetadata saved = fileService.saveFile(file);
-        auditService.fileUploaded(authentication.getName(), saved.getFileName(), saved.getId());
-        return ResponseEntity.ok(saved);
+        try {
+            FileMetadata saved = fileService.saveFile(file);
+            auditService.fileUploaded(authentication.getName(), saved.getFileName(), saved.getId());
+            return ResponseEntity.ok(saved);
+        } catch (IllegalArgumentException e) {
+            auditService.uploadRejected(authentication.getName(), file.getOriginalFilename(), e.getMessage());
+            throw e;
+        }
     }
 
     @GetMapping

@@ -36,4 +36,20 @@ public class AuditService {
     public void fileDeleted(String username, String fileName, Long fileId) {
         audit.warn("action=FILE_DELETE user={} file=\"{}\" id={}", username, fileName, fileId);
     }
+
+    public void uploadRejected(String username, String fileName, String reason) {
+        audit.warn("action=UPLOAD_REJECTED user={} file=\"{}\" reason=\"{}\"", username, fileName, reason);
+    }
+
+    public void accessDenied(String username, String path, String ip) {
+        audit.warn("action=ACCESS_DENIED user={} path={} ip={}", username, path, ip);
+    }
+
+    public void invalidToken(String ip) {
+        audit.warn("action=INVALID_TOKEN ip={}", ip);
+    }
+
+    public void revokedToken(String username, String ip) {
+        audit.warn("action=REVOKED_TOKEN user={} ip={}", username, ip);
+    }
 }

@@ -1,5 +1,6 @@
 package com.eva.securefiles.config;
 
+import com.eva.securefiles.service.AuditService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,12 @@ public class SecurityConfig {
 
     @Value("${app.cors.origin}")
     private String corsOrigin;
+
+    private final AuditService auditService;
+
+    public SecurityConfig(AuditService auditService) {
+        this.auditService = auditService;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -72,7 +79,13 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) ->
-                                response.sendError(401, "Unauthorized")))
+                                response.sendError(401, "Unauthorized"))
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            String username = request.getUserPrincipal() != null
+                                    ? request.getUserPrincipal().getName() : "unknown";
+                            auditService.accessDenied(username, request.getRequestURI(), request.getRemoteAddr());
+                            response.sendError(403, "Forbidden");
+                        }))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
