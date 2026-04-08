@@ -101,7 +101,7 @@ export CORS_ORIGIN=http://localhost:5173
 export REDIS_HOST=localhost
 export REDIS_PORT=6379
 ```
-To verify:
+`export` commands are silent — no output means it worked. To verify a variable was set:
 ```bash
 echo $DB_PASSWORD
 ```
@@ -123,8 +123,7 @@ Start services in this order — the backend will fail to start if PostgreSQL, M
 
 ## Running PostgreSQL
 
-The app expects PostgreSQL on port `5434` (not the default 5432 — this avoids conflicts if you already have PostgreSQL installed). 
-Start terminal. Run it with Docker:
+The app expects PostgreSQL on port `5434` (not the default 5432 — this avoids conflicts if you already have PostgreSQL installed). Run it with Docker:
 
 ```bash
 docker run -d -p 5434:5432 --name postgres -e POSTGRES_PASSWORD=your-db-password -e POSTGRES_DB=securefiles postgres:16
@@ -156,15 +155,38 @@ The app automatically creates the bucket on startup if it doesn't exist. The Min
 
 ---
 
+## Subsequent startups
+
+The `docker run` commands above only need to be run once — they create the containers. On future startups, just start the existing containers:
+
+```bash
+docker start postgres redis minio
+```
+
+To check if they are already running:
+```bash
+docker ps
+```
+
+---
+
 ## Running the backend
 
 **IntelliJ:** Press the green play button. Make sure your run configuration has all environment variables set (see above).
 
 **Terminal:**
+
+If you get a "permission denied" error, first run:
+```bash
+chmod +x mvnw
+```
+Then:
 ```bash
 cd securefiles
 ./mvnw spring-boot:run
 ```
+
+The terminal must stay open while the backend is running. The backend is ready when you see `Started SecurefilesApplication` in the output.
 
 The API will be available at `http://localhost:8080`.
 
@@ -187,6 +209,8 @@ npm run dev
 ```
 
 `npm install` only needs to be run once (or after pulling new changes). After that, `npm run dev` is enough.
+
+The terminal must stay open while the frontend is running.
 
 The frontend will be available at `http://localhost:5173`.
 
