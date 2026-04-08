@@ -1,10 +1,12 @@
 package com.eva.securefiles.controller;
 
+import com.eva.securefiles.config.LoginRateLimiter;
 import com.eva.securefiles.service.AuditService;
 import com.eva.securefiles.service.JwtService;
 import com.eva.securefiles.service.TokenDenylistService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -22,17 +24,20 @@ public class AuthController {
     private final UserDetailsService userDetailsService;
     private final TokenDenylistService tokenDenylistService;
     private final AuditService auditService;
+    private final LoginRateLimiter rateLimiter;
 
     public AuthController(AuthenticationManager authenticationManager,
                           JwtService jwtService,
                           UserDetailsService userDetailsService,
                           TokenDenylistService tokenDenylistService,
-                          AuditService auditService) {
+                          AuditService auditService,
+                          LoginRateLimiter rateLimiter) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
         this.tokenDenylistService = tokenDenylistService;
         this.auditService = auditService;
+        this.rateLimiter = rateLimiter;
     }
 
     record LoginRequest(String username, String password) {}
@@ -41,15 +46,22 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         String ip = httpRequest.getRemoteAddr();
+
+        if (rateLimiter.isBlocked(ip)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+        }
+
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.username(), request.password())
             );
         } catch (BadCredentialsException e) {
+            rateLimiter.recordFailure(ip);
             auditService.loginFailure(request.username(), ip);
             throw e;
         }
 
+        rateLimiter.reset(ip);
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.username());
         String token = jwtService.generateToken(userDetails);
         String role = userDetails.getAuthorities().stream()
