@@ -1,7 +1,12 @@
+// Displays a paginated table of all uploaded files.
+// Each row has buttons to preview, download, and optionally delete a file.
+// canDelete is passed as true for admins and false (default) for regular users.
+
 import { useState, useEffect } from 'react';
 import { getFiles, downloadFile, deleteFile } from './api';
 import FilePreview from './FilePreview';
 
+// Matches the shape of a file object returned by the backend
 interface FileMetadata {
   id: number;
   fileName: string;
@@ -11,9 +16,10 @@ interface FileMetadata {
 
 interface Props {
   canDelete?: boolean;
+  refreshKey?: number;  // increment this from the parent to trigger a refresh
 }
 
-function FileList({ canDelete = false }: Props) {
+function FileList({ canDelete = false, refreshKey = 0 }: Props) {
   const [files, setFiles] = useState<FileMetadata[]>([]);
   const [message, setMessage] = useState('');
   const [page, setPage] = useState(0);
@@ -22,7 +28,7 @@ function FileList({ canDelete = false }: Props) {
 
   useEffect(() => {
     fetchFiles(page);
-  }, [page]);
+  }, [page, refreshKey]);
 
   const fetchFiles = async (p: number) => {
     try {
@@ -69,7 +75,10 @@ function FileList({ canDelete = false }: Props) {
           onClose={() => setPreviewFile(null)}
         />
       )}
-      <h3>Files</h3>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+        <h3 style={{ margin: 0 }}>Files</h3>
+        <button className="btn-secondary" onClick={() => fetchFiles(page)}>Refresh</button>
+      </div>
       {message && <p style={{ color: 'red' }}>{message}</p>}
       {files.length === 0 ? (
         <p>No files available.</p>
@@ -94,7 +103,7 @@ function FileList({ canDelete = false }: Props) {
                     <button onClick={() => setPreviewFile(file)}>Open</button>
                     <button onClick={() => handleDownload(file.id, file.fileName)}>Download</button>
                     {canDelete && (
-                      <button onClick={() => handleDelete(file.id, file.fileName)} style={{ color: 'red' }}>
+                      <button onClick={() => handleDelete(file.id, file.fileName)} className="btn-danger">
                         Delete
                       </button>
                     )}

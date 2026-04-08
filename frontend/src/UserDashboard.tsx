@@ -1,3 +1,6 @@
+// User dashboard — shown when the logged-in user has the USER role.
+// Read-only view: can preview and download files but cannot upload or delete.
+
 import FileList from './FileList';
 
 interface Props {

@@ -1,3 +1,7 @@
+// Login page — shown when the user is not authenticated.
+// On successful login, calls onLogin with the username and role so App.tsx
+// can redirect to the correct dashboard.
+
 import { useState } from 'react';
 import { login } from './api';
 

@@ -1,3 +1,7 @@
+// Modal overlay that previews a file in the browser without downloading it.
+// Supports images, video, audio, PDF, and plain text.
+// Clicking outside the modal (the dark backdrop) closes it.
+
 import { useEffect, useState } from 'react';
 import { previewFile } from './api';
 
@@ -5,7 +9,7 @@ interface Props {
   id: number;
   fileName: string;
   fileType: string;
-  onClose: () => void;
+  onClose: () => void;  // called when the user closes the preview
 }
 
 function FilePreview({ id, fileName, fileType, onClose }: Props) {

@@ -1,3 +1,6 @@
+// Admin dashboard — shown when the logged-in user has the ADMIN role.
+// Includes a file upload form and the full file list with delete access.
+
 import { useState } from 'react';
 import { uploadFile } from './api';
 import FileList from './FileList';
@@ -9,6 +12,7 @@ interface Props {
 function Dashboard({ onLogout }: Props) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [message, setMessage] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);  // incrementing this triggers a file list reload
 
   const handleUpload = async () => {
     if (!selectedFile) {
@@ -19,6 +23,7 @@ function Dashboard({ onLogout }: Props) {
       await uploadFile(selectedFile);
       setMessage('File uploaded successfully!');
       setSelectedFile(null);
+      setRefreshKey(k => k + 1);  // auto-refresh the file list after upload
     } catch {
       setMessage('Upload failed.');
     }
@@ -40,7 +45,7 @@ function Dashboard({ onLogout }: Props) {
         <button onClick={handleUpload} style={{ padding: '0.5rem 1rem' }}>Upload</button>
         {message && <p style={{ color: 'green', marginTop: '0.5rem' }}>{message}</p>}
       </div>
-      <FileList canDelete />
+      <FileList canDelete refreshKey={refreshKey} />
     </div>
   );
 }
