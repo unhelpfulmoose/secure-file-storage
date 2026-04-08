@@ -120,7 +120,8 @@ Start services in this order — the backend will fail to start if PostgreSQL, M
 
 ## Running PostgreSQL
 
-The app expects PostgreSQL on port `5434` (not the default 5432 — this avoids conflicts if you already have PostgreSQL installed). Run it with Docker:
+The app expects PostgreSQL on port `5434` (not the default 5432 — this avoids conflicts if you already have PostgreSQL installed). 
+Start terminal. Run it with Docker:
 
 ```bash
 docker run -d -p 5434:5432 --name postgres -e POSTGRES_PASSWORD=your-db-password -e POSTGRES_DB=securefiles postgres:16
@@ -145,13 +146,7 @@ docker run -d -p 6379:6379 --name redis redis:7
 MinIO is an open-source S3-compatible object store used to store encrypted files. Run it with Docker:
 
 ```bash
-docker run -d \
-  -p 9000:9000 \
-  -p 9001:9001 \
-  --name minio \
-  -e MINIO_ROOT_USER=minioadmin \
-  -e MINIO_ROOT_PASSWORD=minioadmin \
-  quay.io/minio/minio server /data --console-address ":9001"
+docker run -d -p 9000:9000 -p 9001:9001 --name minio -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin quay.io/minio/minio server /data --console-address ":9001"
 ```
 
 The app automatically creates the bucket on startup if it doesn't exist. The MinIO console is available at `http://localhost:9001`.
