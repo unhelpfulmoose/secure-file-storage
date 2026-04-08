@@ -101,7 +101,10 @@ export CORS_ORIGIN=http://localhost:5173
 export REDIS_HOST=localhost
 export REDIS_PORT=6379
 ```
-
+To verify:
+```bash
+echo $DB_PASSWORD
+```
 The app will fail to start with a clear error if any of these are missing.
 
 ---
