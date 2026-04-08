@@ -30,7 +30,6 @@ function Login({ onLogin }: Props) {
   return (
     <div style={{ maxWidth: '400px', margin: '100px auto', padding: '2rem' }}>
       <h2>Secure File Storage</h2>
-      <h3>Login</h3>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <div>
         <input
