@@ -268,6 +268,15 @@ cd securefiles
 
 ---
 
+## Running frontend tests
+
+```bash
+cd frontend
+npm test
+```
+
+---
+
 ## File upload limits
 
 - Max file size: **10MB**
