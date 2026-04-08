@@ -22,6 +22,7 @@ interface Props {
 function FileList({ canDelete = false, refreshKey = 0 }: Props) {
   const [files, setFiles] = useState<FileMetadata[]>([]);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [previewFile, setPreviewFile] = useState<FileMetadata | null>(null);
@@ -31,12 +32,16 @@ function FileList({ canDelete = false, refreshKey = 0 }: Props) {
   }, [page, refreshKey]);
 
   const fetchFiles = async (p: number) => {
+    setLoading(true);
+    setMessage('');
     try {
       const response = await getFiles(p);
       setFiles(response.data.content);
       setTotalPages(response.data.totalPages);
     } catch {
       setMessage('Could not load files.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,7 +85,9 @@ function FileList({ canDelete = false, refreshKey = 0 }: Props) {
         <button className="btn-secondary" onClick={() => fetchFiles(page)}>Refresh</button>
       </div>
       {message && <p style={{ color: 'red' }}>{message}</p>}
-      {files.length === 0 ? (
+      {loading ? (
+        <p>Loading...</p>
+      ) : files.length === 0 ? (
         <p>No files available.</p>
       ) : (
         <>
@@ -124,5 +131,6 @@ function FileList({ canDelete = false, refreshKey = 0 }: Props) {
     </div>
   );
 }
+
 
 export default FileList;

@@ -12,6 +12,7 @@ interface Props {
 function Dashboard({ onLogout }: Props) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [message, setMessage] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);  // incrementing this triggers a file list reload
 
   const handleUpload = async () => {
@@ -19,6 +20,8 @@ function Dashboard({ onLogout }: Props) {
       setMessage('Please select a file first.');
       return;
     }
+    setUploading(true);
+    setMessage('');
     try {
       await uploadFile(selectedFile);
       setMessage('File uploaded successfully!');
@@ -26,6 +29,8 @@ function Dashboard({ onLogout }: Props) {
       setRefreshKey(k => k + 1);  // auto-refresh the file list after upload
     } catch {
       setMessage('Upload failed.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -42,8 +47,14 @@ function Dashboard({ onLogout }: Props) {
           onChange={e => setSelectedFile(e.target.files?.[0] || null)}
           style={{ marginBottom: '1rem', display: 'block' }}
         />
-        <button onClick={handleUpload} style={{ padding: '0.5rem 1rem' }}>Upload</button>
-        {message && <p style={{ color: 'green', marginTop: '0.5rem' }}>{message}</p>}
+        <button onClick={handleUpload} disabled={uploading} style={{ padding: '0.5rem 1rem' }}>
+          {uploading ? 'Uploading...' : 'Upload'}
+        </button>
+        {message && (
+          <p style={{ color: message.includes('failed') ? 'red' : 'green', marginTop: '0.5rem' }}>
+            {message}
+          </p>
+        )}
       </div>
       <FileList canDelete refreshKey={refreshKey} />
     </div>
