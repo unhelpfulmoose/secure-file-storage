@@ -3,7 +3,11 @@ package com.eva.securefiles.config;
 import com.eva.securefiles.service.AuditService;
 import com.eva.securefiles.service.JwtService;
 import com.eva.securefiles.service.TokenDenylistService;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,8 +55,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String username;
         try {
             username = jwtService.extractUsername(token);
+        } catch (ExpiredJwtException e) {
+            auditService.invalidToken("expired", request.getRemoteAddr());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+            return;
+        } catch (SignatureException e) {
+            auditService.invalidToken("bad signature", request.getRemoteAddr());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+            return;
+        } catch (MalformedJwtException e) {
+            auditService.invalidToken("malformed", request.getRemoteAddr());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+            return;
+        } catch (UnsupportedJwtException e) {
+            auditService.invalidToken("unsupported", request.getRemoteAddr());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+            return;
         } catch (JwtException e) {
-            auditService.invalidToken(request.getRemoteAddr());
+            auditService.invalidToken("unknown", request.getRemoteAddr());
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
             return;
         }

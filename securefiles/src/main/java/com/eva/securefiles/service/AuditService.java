@@ -73,8 +73,8 @@ public class AuditService {
         log("ACCESS_DENIED", username, "path=" + path, ip);
     }
 
-    public void invalidToken(String ip) {
-        log("INVALID_TOKEN", null, null, ip);
+    public void invalidToken(String reason, String ip) {
+        log("INVALID_TOKEN", null, "reason=" + reason, ip);
     }
 
     public void revokedToken(String username, String ip) {
