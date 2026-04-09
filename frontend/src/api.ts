@@ -81,3 +81,11 @@ export const createUser = async (username: string, password: string, role: strin
 export const deleteUser = async (id: number) => {
     return axios.delete(`${API_URL}/users/${id}`, { headers: authHeader() });
 };
+
+// Fetches a paginated audit log (admin only).
+export const getAuditLog = async (page = 0, size = 50) => {
+    return axios.get(`${API_URL}/audit`, {
+        headers: authHeader(),
+        params: { page, size }
+    });
+};

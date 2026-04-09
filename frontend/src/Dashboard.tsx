@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { uploadFile } from './api';
 import FileList from './FileList';
 import UserManagement from './UserManagement';
+import AuditLogView from './AuditLogView';
 
 interface Props {
   onLogout: () => void;
@@ -60,6 +61,8 @@ function Dashboard({ onLogout }: Props) {
       <FileList canDelete refreshKey={refreshKey} />
       <hr style={{ margin: '2rem 0' }} />
       <UserManagement />
+      <hr style={{ margin: '2rem 0' }} />
+      <AuditLogView />
     </div>
   );
 }
