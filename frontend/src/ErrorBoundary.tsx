@@ -1,7 +1,8 @@
 // Catches unhandled errors anywhere in the component tree and shows a fallback UI
 // instead of a blank/broken page. React requires this to be a class component.
 
-import { Component, ReactNode } from 'react';
+import { Component } from 'react';
+import type { ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;

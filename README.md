@@ -55,6 +55,13 @@ The application requires the following environment variables to be set before st
 | `CORS_ORIGIN` | Allowed frontend origin, e.g. `http://localhost:5173` |
 | `REDIS_HOST` | Redis server hostname, e.g. `localhost` |
 | `REDIS_PORT` | Redis server port, e.g. `6379` |
+| `SERVER_PORT` | Port the backend listens on (default: `8080`) |
+
+A template with all variables is provided in `.env.example`. Copy it and fill in your values:
+
+```bash
+cp .env.example .env
+```
 
 ### Option A — IntelliJ (recommended for backend)
 
@@ -64,44 +71,20 @@ You set the variables once in IntelliJ and they are used every time you run the 
 2. Click **Run → Edit Configurations...**
 3. Select your Spring Boot run configuration (or create one if it doesn't exist: click **+** → **Spring Boot**, set Main class to `com.eva.securefiles.SecurefilesApplication`)
 4. Find the **Environment variables** field and click the icon on the right to open the editor
-5. Add each variable as `NAME=value`:
-
-```
-DB_PASSWORD=your-db-password
-ADMIN_PASSWORD=your-admin-password
-USER_PASSWORD=your-user-password
-JWT_SECRET=your-secret-key-min-32-characters
-MASTER_ENCRYPTION_KEY=your-master-key-min-32-characters
-MINIO_ENDPOINT=http://localhost:9000
-MINIO_ACCESS_KEY=minioadmin
-MINIO_SECRET_KEY=minioadmin
-MINIO_BUCKET=securefiles
-CORS_ORIGIN=http://localhost:5173
-REDIS_HOST=localhost
-REDIS_PORT=6379
-```
-
+5. Add each variable as `NAME=value` (use the values from your `.env` file)
 6. Click **OK**
 
 ### Option B — Terminal
 
-If you prefer the terminal, run these export commands before starting the backend. Note that they only last for the current terminal session — you'll need to run them again if you open a new terminal.
+Load the variables from your `.env` file:
 
 ```bash
-export DB_PASSWORD=your-db-password
-export ADMIN_PASSWORD=your-admin-password
-export USER_PASSWORD=your-user-password
-export JWT_SECRET=your-secret-key-min-32-characters
-export MASTER_ENCRYPTION_KEY=your-master-key-min-32-characters
-export MINIO_ENDPOINT=http://localhost:9000
-export MINIO_ACCESS_KEY=minioadmin
-export MINIO_SECRET_KEY=minioadmin
-export MINIO_BUCKET=securefiles
-export CORS_ORIGIN=http://localhost:5173
-export REDIS_HOST=localhost
-export REDIS_PORT=6379
+set -a; source .env; set +a
 ```
-`export` commands are silent — no output means it worked. To verify a variable was set:
+
+This exports all variables for the current terminal session. You will need to run it again if you open a new terminal.
+
+To verify a variable was loaded:
 ```bash
 echo $DB_PASSWORD
 ```
@@ -126,10 +109,15 @@ Start services in this order — the backend will fail to start if PostgreSQL, M
 The app expects PostgreSQL on port `5434` (not the default 5432 — this avoids conflicts if you already have PostgreSQL installed). Run it with Docker:
 
 ```bash
-docker run -d -p 5434:5432 --name postgres -e POSTGRES_PASSWORD=your-db-password -e POSTGRES_DB=securefiles postgres:16
+docker run -d \
+  -p 5434:5432 \
+  --name postgres \
+  -e POSTGRES_PASSWORD="$DB_PASSWORD" \
+  -e POSTGRES_DB=securefiles \
+  postgres:16
 ```
 
-Replace `your-db-password` with whatever you set for `DB_PASSWORD`. The app connects as user `postgres` to a database named `securefiles`. Flyway will create the tables automatically on first startup.
+The app connects as user `postgres` to a database named `securefiles`. Flyway will create the tables automatically on first startup.
 
 ---
 
@@ -138,7 +126,7 @@ Replace `your-db-password` with whatever you set for `DB_PASSWORD`. The app conn
 Redis is used to store revoked JWT tokens so logout takes effect immediately.
 
 ```bash
-docker run -d -p 6379:6379 --name redis redis:7
+docker run -d -p "$REDIS_PORT":6379 --name redis redis:7
 ```
 
 ---
@@ -148,7 +136,13 @@ docker run -d -p 6379:6379 --name redis redis:7
 MinIO is an open-source S3-compatible object store used to store encrypted files. Run it with Docker:
 
 ```bash
-docker run -d -p 9000:9000 -p 9001:9001 --name minio -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin quay.io/minio/minio server /data --console-address ":9001"
+docker run -d \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  --name minio \
+  -e MINIO_ROOT_USER="$MINIO_ACCESS_KEY" \
+  -e MINIO_ROOT_PASSWORD="$MINIO_SECRET_KEY" \
+  quay.io/minio/minio server /data --console-address ":9001"
 ```
 
 The app automatically creates the bucket on startup if it doesn't exist. The MinIO console is available at `http://localhost:9001`.
@@ -174,7 +168,9 @@ docker ps
 
 **IntelliJ:** Press the green play button. Make sure your run configuration has all environment variables set (see above).
 
-**Terminal:**
+**Terminal (development):**
+
+`./mvnw spring-boot:run` compiles and runs in one step — convenient during development but requires write access to the `target/` directory.
 
 If you get a "permission denied" error, first run:
 ```bash
@@ -186,9 +182,19 @@ cd securefiles
 ./mvnw spring-boot:run
 ```
 
+**Terminal (production / minimal permissions):**
+
+Split into a build step (requires write access) and a run step (no write access needed):
+
+```bash
+cd securefiles
+./mvnw clean package -DskipTests   # build once — needs write access to target/
+java -jar target/*.jar              # run without write permissions
+```
+
 The terminal must stay open while the backend is running. The backend is ready when you see `Started SecurefilesApplication` in the output.
 
-The API will be available at `http://localhost:8080`.
+The API will be available at `http://localhost:${SERVER_PORT}` (default: `http://localhost:8080`).
 
 ---
 

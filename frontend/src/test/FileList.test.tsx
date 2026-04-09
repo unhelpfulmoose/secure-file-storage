@@ -1,6 +1,6 @@
 // Tests for FileList — rendering files, loading state, empty state, and delete.
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
 import FileList from '../FileList'
 import * as api from '../api'
