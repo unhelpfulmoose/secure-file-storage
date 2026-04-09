@@ -63,8 +63,7 @@ The application requires the following environment variables to be set before st
 | Variable | Description |
 |----------|-------------|
 | `DB_PASSWORD` | PostgreSQL password for the `postgres` user |
-| `ADMIN_PASSWORD` | Password for the built-in `admin` account |
-| `USER_PASSWORD` | Password for the built-in `user` account |
+| `ADMIN_PASSWORD` | Password for the default `admin` account created on first startup |
 | `JWT_SECRET` | Secret key used to sign JWT tokens — must be at least 32 characters |
 | `MASTER_ENCRYPTION_KEY` | A secret key used to protect the encryption keys for each file — treat it like a strong password, min 32 characters |
 | `MINIO_ENDPOINT` | MinIO server URL, e.g. `http://localhost:9000` |
@@ -249,10 +248,12 @@ VITE_API_URL=http://your-backend-url
 
 ## User roles
 
-| Role | Upload | List / Preview / Download | Delete |
-|------|--------|--------------------------|--------|
-| `admin` | yes | yes | yes |
-| `user` | no | yes | no |
+| Role | Upload | List / Preview / Download | Delete | Manage users |
+|------|--------|--------------------------|--------|--------------|
+| `admin` | yes | yes | yes | yes |
+| `user` | no | yes | no | no |
+
+Users are created and managed from the admin dashboard.
 
 ---
 
@@ -262,10 +263,9 @@ Once everything is running, open `http://localhost:5173` in your browser. Use th
 
 | Username | Password | Role |
 |----------|----------|------|
-| `admin` | value of `ADMIN_PASSWORD` | Can upload, preview, download, and delete files |
-| `user` | value of `USER_PASSWORD` | Can preview and download files |
+| `admin` | value of `ADMIN_PASSWORD` | Can upload, preview, download, delete files, and manage users |
 
-You choose the passwords yourself when setting the environment variables.
+The admin account is created automatically on first startup. Additional users can be created from the admin dashboard.
 
 ---
 
@@ -281,7 +281,7 @@ If the backend fails to start, check that all environment variables are set and 
 
 ## Running tests
 
-Tests require a live PostgreSQL instance and the following environment variables to be set: `DB_PASSWORD`, `ADMIN_PASSWORD`, `USER_PASSWORD`, `JWT_SECRET`.
+Tests require a live PostgreSQL instance and the following environment variables to be set: `DB_PASSWORD`, `ADMIN_PASSWORD`, `JWT_SECRET`.
 
 **IntelliJ:** Right-click the `src/test` folder and choose **Run All Tests**. Make sure your run configuration has the required environment variables set.
 
