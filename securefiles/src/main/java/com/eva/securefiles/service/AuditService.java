@@ -52,4 +52,16 @@ public class AuditService {
     public void revokedToken(String username, String ip) {
         audit.warn("action=REVOKED_TOKEN user={} ip={}", username, ip);
     }
+
+    public void userCreated(String adminUsername, String newUsername, String role) {
+        audit.info("action=USER_CREATED admin={} newUser={} role={}", adminUsername, newUsername, role);
+    }
+
+    public void userDeleted(String adminUsername, String deletedUsername, Long userId) {
+        audit.warn("action=USER_DELETED admin={} deletedUser={} id={}", adminUsername, deletedUsername, userId);
+    }
+
+    public void userCreationFailed(String adminUsername, String newUsername, String reason) {
+        audit.warn("action=USER_CREATION_FAILED admin={} newUser=\"{}\" reason=\"{}\"", adminUsername, newUsername, reason);
+    }
 }

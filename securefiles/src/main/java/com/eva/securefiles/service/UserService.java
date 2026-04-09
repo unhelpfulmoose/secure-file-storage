@@ -54,6 +54,11 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
+    public AppUser getUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
+    }
+
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new NoSuchElementException("User not found");
