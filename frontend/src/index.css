@@ -1,4 +1,4 @@
-/* ─── Variables ─── */
+/* Variables */
 :root {
   --text: #3b3b3b;
   --text-muted: #6b6375;  /* secondary text, e.g. table metadata */
@@ -31,7 +31,7 @@
 }
 
 
-/* ─── Reset ─── */
+/* Reset */
 * {
   box-sizing: border-box;
 }
@@ -51,15 +51,14 @@ p {
 }
 
 
-/* ─── App root ─── */
+/* App root */
 #root {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
+  margin: 0;
+  padding: 0;
 }
 
 
-/* ─── Buttons ─── */
+/* Buttons */
 button {
   display: inline-flex;
   align-items: center;
@@ -104,7 +103,7 @@ button.btn-danger:hover {
 }
 
 
-/* ─── Inputs ─── */
+/* Inputs */
 input[type="text"],
 input[type="password"] {
   width: 100%;
@@ -124,7 +123,7 @@ input[type="password"]:focus {
 }
 
 
-/* ─── Table ─── */
+/* Table */
 table {
   width: 100%;
   border-collapse: collapse;
