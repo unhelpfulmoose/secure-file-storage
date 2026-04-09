@@ -12,6 +12,32 @@ Then follow the steps below to start all required services and run the app.
 
 ---
 
+## Quick start with Docker Compose
+
+The easiest way to run the project. Everything starts with one command.
+
+1. Copy `.env.example` to `.env` and fill in your values:
+```bash
+cp .env.example .env
+```
+
+2. Start everything:
+```bash
+docker compose up --build
+```
+
+The first run takes a few minutes to build the images. Once ready:
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:8080`
+- MinIO console: `http://localhost:9001`
+
+To stop:
+```bash
+docker compose down
+```
+
+---
+
 ## Tech stack
 
 - **Backend**: Java 21, Spring Boot 3.4.3, Spring Security (JWT), Spring Data JPA, Flyway
