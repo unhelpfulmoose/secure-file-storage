@@ -247,7 +247,7 @@ function Dashboard({ onLogout }: Props) {
         </div>
 
         <div style={{ padding: '1.25rem' }}>
-          <button onClick={onLogout} className="btn-secondary" style={{ width: '100%' }}>
+          <button onClick={onLogout} style={{ width: '100%' }}>
             Logout
           </button>
         </div>
