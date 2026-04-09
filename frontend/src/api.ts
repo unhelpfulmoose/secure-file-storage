@@ -66,3 +66,18 @@ export const previewFile = async (id: number) => {
         responseType: 'blob'
     });
 };
+
+// Fetches all users (admin only).
+export const getUsers = async () => {
+    return axios.get(`${API_URL}/users`, { headers: authHeader() });
+};
+
+// Creates a new user (admin only).
+export const createUser = async (username: string, password: string, role: string) => {
+    return axios.post(`${API_URL}/users`, { username, password, role }, { headers: authHeader() });
+};
+
+// Deletes a user by ID (admin only).
+export const deleteUser = async (id: number) => {
+    return axios.delete(`${API_URL}/users/${id}`, { headers: authHeader() });
+};
