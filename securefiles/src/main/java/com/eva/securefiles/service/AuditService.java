@@ -1,67 +1,95 @@
 package com.eva.securefiles.service;
 
+import com.eva.securefiles.model.AuditLog;
+import com.eva.securefiles.repository.AuditLogRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 
 @Service
 public class AuditService {
 
     private static final Logger audit = LoggerFactory.getLogger("AUDIT");
 
+    private final AuditLogRepository auditLogRepository;
+
+    public AuditService(AuditLogRepository auditLogRepository) {
+        this.auditLogRepository = auditLogRepository;
+    }
+
+    private void log(String action, String username, String details, String ip) {
+        audit.info("action={} user={} details=\"{}\" ip={}", action, username, details, ip);
+
+        AuditLog entry = new AuditLog();
+        entry.setAction(action);
+        entry.setUsername(username);
+        entry.setDetails(details);
+        entry.setIp(ip);
+        entry.setCreatedAt(LocalDateTime.now());
+        auditLogRepository.save(entry);
+    }
+
+    public Page<AuditLog> getAuditLog(Pageable pageable) {
+        return auditLogRepository.findAllByOrderByCreatedAtDesc(pageable);
+    }
+
     public void loginSuccess(String username, String ip) {
-        audit.info("action=LOGIN_SUCCESS user={} ip={}", username, ip);
+        log("LOGIN_SUCCESS", username, null, ip);
     }
 
     public void loginFailure(String username, String ip) {
-        audit.warn("action=LOGIN_FAILURE user={} ip={}", username, ip);
+        log("LOGIN_FAILURE", username, null, ip);
     }
 
     public void logout(String username) {
-        audit.info("action=LOGOUT user={}", username);
+        log("LOGOUT", username, null, null);
     }
 
     public void fileUploaded(String username, String fileName, Long fileId) {
-        audit.info("action=FILE_UPLOAD user={} file=\"{}\" id={}", username, fileName, fileId);
+        log("FILE_UPLOAD", username, "file=\"" + fileName + "\" id=" + fileId, null);
     }
 
     public void fileDownloaded(String username, String fileName, Long fileId) {
-        audit.info("action=FILE_DOWNLOAD user={} file=\"{}\" id={}", username, fileName, fileId);
+        log("FILE_DOWNLOAD", username, "file=\"" + fileName + "\" id=" + fileId, null);
     }
 
     public void filePreviewed(String username, String fileName, Long fileId) {
-        audit.info("action=FILE_PREVIEW user={} file=\"{}\" id={}", username, fileName, fileId);
+        log("FILE_PREVIEW", username, "file=\"" + fileName + "\" id=" + fileId, null);
     }
 
     public void fileDeleted(String username, String fileName, Long fileId) {
-        audit.warn("action=FILE_DELETE user={} file=\"{}\" id={}", username, fileName, fileId);
+        log("FILE_DELETE", username, "file=\"" + fileName + "\" id=" + fileId, null);
     }
 
     public void uploadRejected(String username, String fileName, String reason) {
-        audit.warn("action=UPLOAD_REJECTED user={} file=\"{}\" reason=\"{}\"", username, fileName, reason);
+        log("UPLOAD_REJECTED", username, "file=\"" + fileName + "\" reason=\"" + reason + "\"", null);
     }
 
     public void accessDenied(String username, String path, String ip) {
-        audit.warn("action=ACCESS_DENIED user={} path={} ip={}", username, path, ip);
+        log("ACCESS_DENIED", username, "path=" + path, ip);
     }
 
     public void invalidToken(String ip) {
-        audit.warn("action=INVALID_TOKEN ip={}", ip);
+        log("INVALID_TOKEN", null, null, ip);
     }
 
     public void revokedToken(String username, String ip) {
-        audit.warn("action=REVOKED_TOKEN user={} ip={}", username, ip);
+        log("REVOKED_TOKEN", username, null, ip);
     }
 
     public void userCreated(String adminUsername, String newUsername, String role) {
-        audit.info("action=USER_CREATED admin={} newUser={} role={}", adminUsername, newUsername, role);
+        log("USER_CREATED", adminUsername, "newUser=" + newUsername + " role=" + role, null);
     }
 
     public void userDeleted(String adminUsername, String deletedUsername, Long userId) {
-        audit.warn("action=USER_DELETED admin={} deletedUser={} id={}", adminUsername, deletedUsername, userId);
+        log("USER_DELETED", adminUsername, "deletedUser=" + deletedUsername + " id=" + userId, null);
     }
 
     public void userCreationFailed(String adminUsername, String newUsername, String reason) {
-        audit.warn("action=USER_CREATION_FAILED admin={} newUser=\"{}\" reason=\"{}\"", adminUsername, newUsername, reason);
+        log("USER_CREATION_FAILED", adminUsername, "newUser=" + newUsername + " reason=\"" + reason + "\"", null);
     }
 }

@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/files/{id}").hasRole("ADMIN")
                         .requestMatchers("/files/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers("/users/**").hasRole("ADMIN")
+                        .requestMatchers("/audit/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
