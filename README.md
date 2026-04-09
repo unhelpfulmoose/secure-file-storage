@@ -47,13 +47,6 @@ docker compose down
 
 ---
 
-## Recommended tools
-
-- **Backend**: [IntelliJ IDEA Community Edition](https://www.jetbrains.com/idea/download/) — open the `securefiles/` folder as a Maven project
-- **Frontend**: [Visual Studio Code](https://code.visualstudio.com/) — open the `frontend/` folder
-
----
-
 ## Prerequisites
 
 - Java 21
