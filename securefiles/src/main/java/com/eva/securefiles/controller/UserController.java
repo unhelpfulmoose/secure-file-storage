@@ -22,6 +22,7 @@ public class UserController {
     }
 
     record CreateUserRequest(String username, String password, String role) {}
+    record ChangePasswordRequest(String newPassword) {}
 
     @GetMapping
     public ResponseEntity<List<AppUser>> getAllUsers() {
@@ -39,6 +40,16 @@ public class UserController {
             auditService.userCreationFailed(authentication.getName(), request.username(), e.getMessage());
             throw e;
         }
+    }
+
+    @PatchMapping("/{id}/password")
+    public ResponseEntity<Void> changePassword(@PathVariable Long id,
+                                               @RequestBody ChangePasswordRequest request,
+                                               Authentication authentication) {
+        AppUser user = userService.getUserById(id);
+        userService.changePassword(id, request.newPassword());
+        auditService.passwordChanged(authentication.getName(), user.getUsername());
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

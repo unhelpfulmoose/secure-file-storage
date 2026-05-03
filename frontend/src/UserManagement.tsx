@@ -1,7 +1,7 @@
 // Admin section for listing, creating, and deleting users.
 
 import { useState, useEffect } from 'react';
-import { getUsers, createUser, deleteUser, type AppUser } from './api';
+import { getUsers, createUser, deleteUser, changePassword, type AppUser } from './api';
 
 function UserManagement() {
     const [users, setUsers] = useState<AppUser[]>([]);
@@ -11,9 +11,11 @@ function UserManagement() {
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('USER');
     const [creating, setCreating] = useState(false);
+    const [changingPasswordFor, setChangingPasswordFor] = useState<number | null>(null);
+    const [newPassword, setNewPassword] = useState('');
 
     useEffect(() => {
-        fetchUsers();
+        void fetchUsers();
     }, []);
 
     const fetchUsers = async () => {
@@ -41,7 +43,7 @@ function UserManagement() {
             setPassword('');
             setRole('USER');
             setMessage('User created successfully!');
-            fetchUsers();
+            await fetchUsers();
         } catch {
             setMessage('Failed to create user.');
         } finally {
@@ -49,11 +51,26 @@ function UserManagement() {
         }
     };
 
+    const handleChangePassword = async (id: number) => {
+        if (!newPassword) {
+            setMessage('New password is required.');
+            return;
+        }
+        try {
+            await changePassword(id, newPassword);
+            setChangingPasswordFor(null);
+            setNewPassword('');
+            setMessage('Password changed successfully!');
+        } catch {
+            setMessage('Failed to change password.');
+        }
+    };
+
     const handleDelete = async (id: number, name: string) => {
         if (!window.confirm(`Delete user "${name}"?`)) return;
         try {
             await deleteUser(id);
-            fetchUsers();
+            await fetchUsers();
         } catch {
             setMessage('Failed to delete user.');
         }
@@ -63,7 +80,7 @@ function UserManagement() {
         <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
                 <h3 style={{ margin: 0 }}>Users</h3>
-                <button className="btn-secondary" onClick={fetchUsers}>Refresh</button>
+                <button className="btn-secondary" onClick={() => void fetchUsers()}>Refresh</button>
             </div>
 
             <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
@@ -85,7 +102,7 @@ function UserManagement() {
                     <option value="USER">User</option>
                     <option value="ADMIN">Admin</option>
                 </select>
-                <button onClick={handleCreate} disabled={creating}>
+                <button onClick={() => void handleCreate()} disabled={creating}>
                     {creating ? 'Creating...' : 'Create user'}
                 </button>
             </div>
@@ -117,12 +134,37 @@ function UserManagement() {
                                 <td style={{ padding: '0.5rem' }}>{user.role}</td>
                                 <td style={{ padding: '0.5rem' }}>{new Date(user.createdAt).toLocaleDateString()}</td>
                                 <td style={{ padding: '0.5rem' }}>
-                                    <button
-                                        onClick={() => handleDelete(user.id, user.username)}
-                                        className="btn-danger"
-                                    >
-                                        Delete
-                                    </button>
+                                    {changingPasswordFor === user.id ? (
+                                        <span style={{ display: 'inline-flex', gap: '0.4rem', alignItems: 'center' }}>
+                                            <input
+                                                type="password"
+                                                placeholder="New password"
+                                                value={newPassword}
+                                                onChange={e => setNewPassword(e.target.value)}
+                                                style={{ padding: '0.3rem', width: '140px' }}
+                                                autoFocus
+                                            />
+                                            <button onClick={() => void handleChangePassword(user.id)}>Save</button>
+                                            <button className="btn-secondary" onClick={() => {
+                                                setChangingPasswordFor(null);
+                                                setNewPassword('');
+                                            }}>Cancel</button>
+                                        </span>
+                                    ) : (
+                                        <span style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                                            <button className="btn-secondary" onClick={() => {
+                                                setChangingPasswordFor(user.id);
+                                                setNewPassword('');
+                                                setMessage('');
+                                            }}>Change password</button>
+                                            <button
+                                                onClick={() => void handleDelete(user.id, user.username)}
+                                                className="btn-danger"
+                                            >
+                                                Delete
+                                            </button>
+                                        </span>
+                                    )}
                                 </td>
                             </tr>
                         ))}

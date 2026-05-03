@@ -114,6 +114,11 @@ export const createUser = async (username: string, password: string, role: strin
     return axios.post<AppUser>(`${API_URL}/users`, { username, password, role }, { headers: authHeader() });
 };
 
+// Changes the password of a user by ID (admin only).
+export const changePassword = async (id: number, newPassword: string) => {
+    return axios.patch<unknown>(`${API_URL}/users/${id}/password`, { newPassword }, { headers: authHeader() });
+};
+
 // Deletes a user by ID (admin only).
 export const deleteUser = async (id: number) => {
     return axios.delete<unknown>(`${API_URL}/users/${id}`, { headers: authHeader() });

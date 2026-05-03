@@ -59,6 +59,12 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
     }
 
+    public void changePassword(Long id, String newPassword) {
+        AppUser user = getUserById(id);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new NoSuchElementException("User not found");

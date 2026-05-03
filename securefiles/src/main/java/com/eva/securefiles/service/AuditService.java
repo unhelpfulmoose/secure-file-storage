@@ -92,4 +92,8 @@ public class AuditService {
     public void userCreationFailed(String adminUsername, String newUsername, String reason) {
         log("USER_CREATION_FAILED", adminUsername, "newUser=" + newUsername + " reason=\"" + reason + "\"", null);
     }
+
+    public void passwordChanged(String adminUsername, String targetUsername) {
+        log("PASSWORD_CHANGED", adminUsername, "targetUser=" + targetUsername, null);
+    }
 }
