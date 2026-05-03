@@ -85,7 +85,7 @@ class JwtSecurityTest {
                 .roles("USER")
                 .build();
         String token = jwtService.generateToken(userDetails);
-        String jti = jwtService.extractJti(token);
+        String jti = jwtService.extractJti(jwtService.parseToken(token));
 
         when(tokenDenylistService.isDenied(jti)).thenReturn(true);
 

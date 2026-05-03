@@ -4,6 +4,7 @@ import com.eva.securefiles.config.LoginRateLimiter;
 import com.eva.securefiles.service.AuditService;
 import com.eva.securefiles.service.JwtService;
 import com.eva.securefiles.service.TokenDenylistService;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -40,6 +41,8 @@ public class AuthController {
         this.rateLimiter = rateLimiter;
     }
 
+    private static final String BEARER_PREFIX = "Bearer ";
+
     record LoginRequest(String username, String password) {}
     record LoginResponse(String token, String username, String role) {}
 
@@ -75,14 +78,15 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authHeader) {
-        if (!authHeader.startsWith("Bearer ")) {
+        if (!authHeader.startsWith(BEARER_PREFIX)) {
             return ResponseEntity.noContent().build();
         }
-        String token = authHeader.substring(7);
+        String token = authHeader.substring(BEARER_PREFIX.length());
         try {
-            String username = jwtService.extractUsername(token);
-            String jti = jwtService.extractJti(token);
-            long ttl = jwtService.getRemainingValiditySeconds(token);
+            Claims claims = jwtService.parseToken(token);
+            String username = jwtService.extractUsername(claims);
+            String jti = jwtService.extractJti(claims);
+            long ttl = jwtService.getRemainingValiditySeconds(claims);
             tokenDenylistService.denyToken(jti, ttl);
             auditService.logout(username);
         } catch (JwtException e) {

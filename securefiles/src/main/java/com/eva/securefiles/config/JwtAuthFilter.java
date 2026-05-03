@@ -3,6 +3,7 @@ package com.eva.securefiles.config;
 import com.eva.securefiles.service.AuditService;
 import com.eva.securefiles.service.JwtService;
 import com.eva.securefiles.service.TokenDenylistService;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -25,6 +26,8 @@ import java.io.IOException;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private static final String BEARER_PREFIX = "Bearer ";
+
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
     private final TokenDenylistService tokenDenylistService;
@@ -46,15 +49,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain chain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
             chain.doFilter(request, response);
             return;
         }
 
-        String token = authHeader.substring(7);
-        String username;
+        String token = authHeader.substring(BEARER_PREFIX.length());
+        Claims claims;
         try {
-            username = jwtService.extractUsername(token);
+            claims = jwtService.parseToken(token);
         } catch (ExpiredJwtException e) {
             auditService.invalidToken("expired", request.getRemoteAddr());
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
@@ -77,9 +80,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
+        String username = jwtService.extractUsername(claims);
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // Reject tokens that have been explicitly revoked via logout
-            String jti = jwtService.extractJti(token);
+            String jti = jwtService.extractJti(claims);
             if (tokenDenylistService.isDenied(jti)) {
                 auditService.revokedToken(username, request.getRemoteAddr());
                 chain.doFilter(request, response);
@@ -87,7 +91,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (jwtService.isTokenValid(token, userDetails)) {
+            if (jwtService.isTokenValid(claims, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities()
                 );

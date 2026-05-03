@@ -11,7 +11,6 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,37 +37,30 @@ public class JwtService {
                 .compact();
     }
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
-    public String extractJti(String token) {
-        return extractClaim(token, Claims::getId);
-    }
-
-    // Returns how many seconds remain until the token expires
-    public long getRemainingValiditySeconds(String token) {
-        Date expiry = extractClaim(token, Claims::getExpiration);
-        long remaining = expiry.getTime() - System.currentTimeMillis();
-        return Math.max(remaining / 1000, 0);
-    }
-
-    public boolean isTokenValid(String token, UserDetails userDetails) {
-        String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
-    }
-
-    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        Claims claims = Jwts.parser()
+    public Claims parseToken(String token) {
+        return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-        return claimsResolver.apply(claims);
+    }
+
+    public String extractUsername(Claims claims) {
+        return claims.getSubject();
+    }
+
+    public String extractJti(Claims claims) {
+        return claims.getId();
+    }
+
+    public long getRemainingValiditySeconds(Claims claims) {
+        long remaining = claims.getExpiration().getTime() - System.currentTimeMillis();
+        return Math.max(remaining / 1000, 0);
+    }
+
+    public boolean isTokenValid(Claims claims, UserDetails userDetails) {
+        return claims.getSubject().equals(userDetails.getUsername())
+                && !claims.getExpiration().before(new Date());
     }
 
     private SecretKey getSigningKey() {
