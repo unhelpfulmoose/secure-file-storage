@@ -9,14 +9,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 @SpringBootTest
 class SecurefilesApplicationTests {
 
-	@MockBean
-	private StorageService storageService;
+    @MockBean
+    private StorageService storageService;
 
-	@MockBean
-	private TokenDenylistService tokenDenylistService;
+    @MockBean
+    private TokenDenylistService tokenDenylistService;
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 
 }
