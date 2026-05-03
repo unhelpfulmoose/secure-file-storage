@@ -1,14 +1,7 @@
 // Admin section for listing, creating, and deleting users.
 
 import { useState, useEffect } from 'react';
-import { getUsers, createUser, deleteUser } from './api';
-
-interface AppUser {
-    id: number;
-    username: string;
-    role: string;
-    createdAt: string;
-}
+import { getUsers, createUser, deleteUser, type AppUser } from './api';
 
 function UserManagement() {
     const [users, setUsers] = useState<AppUser[]>([]);

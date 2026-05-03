@@ -3,16 +3,8 @@
 // canDelete is passed as true for admins and false (default) for regular users.
 
 import { useState, useEffect } from 'react';
-import { getFiles, downloadFile, deleteFile } from './api';
+import { getFiles, downloadFile, deleteFile, type FileMetadata } from './api';
 import FilePreview from './FilePreview';
-
-// Matches the shape of a file object returned by the backend
-interface FileMetadata {
-  id: number;
-  fileName: string;
-  fileType: string;
-  uploadAt: string;
-}
 
 interface Props {
   canDelete?: boolean;

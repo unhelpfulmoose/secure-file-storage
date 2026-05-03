@@ -1,16 +1,7 @@
 // Admin section that shows a paginated audit log of all system events.
 
 import { useState, useEffect } from 'react';
-import { getAuditLog } from './api';
-
-interface AuditEntry {
-    id: number;
-    action: string;
-    username: string | null;
-    details: string | null;
-    ip: string | null;
-    createdAt: string;
-}
+import { getAuditLog, type AuditEntry } from './api';
 
 const actionColors: Record<string, string> = {
     LOGIN_FAILURE: 'orange',
