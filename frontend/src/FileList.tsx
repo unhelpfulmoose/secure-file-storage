@@ -20,7 +20,7 @@ function FileList({ canDelete = false, refreshKey = 0 }: Props) {
   const [previewFile, setPreviewFile] = useState<FileMetadata | null>(null);
 
   useEffect(() => {
-    fetchFiles(page);
+    void fetchFiles(page);
   }, [page, refreshKey]);
 
   const fetchFiles = async (p: number) => {
@@ -56,7 +56,7 @@ function FileList({ canDelete = false, refreshKey = 0 }: Props) {
     if (!window.confirm(`Delete "${fileName}"?`)) return;
     try {
       await deleteFile(id);
-      fetchFiles(page);
+      await fetchFiles(page);
     } catch {
       setMessage('Delete failed.');
     }
@@ -74,7 +74,7 @@ function FileList({ canDelete = false, refreshKey = 0 }: Props) {
       )}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
         <h3 style={{ margin: 0 }}>Files</h3>
-        <button className="btn-secondary" onClick={() => fetchFiles(page)}>Refresh</button>
+        <button className="btn-secondary" onClick={() => void fetchFiles(page)}>Refresh</button>
       </div>
       {message && <p style={{ color: 'red' }}>{message}</p>}
       {loading ? (
