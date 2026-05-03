@@ -43,6 +43,7 @@ docker compose down
 - **Backend**: Java 21, Spring Boot 3.4.3, Spring Security (JWT), Spring Data JPA, Flyway
 - **Database**: PostgreSQL
 - **Storage**: MinIO (S3-compatible object store)
+- **Cache / token denylist**: Redis 7
 - **Frontend**: React 19 + TypeScript, Vite, Axios
 
 ---
@@ -63,6 +64,8 @@ The application requires the following environment variables to be set before st
 | Variable | Description |
 |----------|-------------|
 | `DB_PASSWORD` | PostgreSQL password for the `postgres` user |
+| `DB_HOST` | PostgreSQL hostname (default: `localhost`) |
+| `DB_PORT` | PostgreSQL port (default: `5434`) |
 | `ADMIN_PASSWORD` | Password for the default `admin` account created on first startup |
 | `JWT_SECRET` | Secret key used to sign JWT tokens — must be at least 32 characters |
 | `MASTER_ENCRYPTION_KEY` | A secret key used to protect the encryption keys for each file — treat it like a strong password, min 32 characters |
@@ -248,12 +251,12 @@ VITE_API_URL=http://your-backend-url
 
 ## User roles
 
-| Role | Upload | List / Preview / Download | Delete | Manage users |
-|------|--------|--------------------------|--------|--------------|
-| `admin` | yes | yes | yes | yes |
-| `user` | no | yes | no | no |
+| Role | Upload | List / Preview / Download | Delete | Manage users | Audit log |
+|------|--------|--------------------------|--------|--------------|-----------|
+| `admin` | yes | yes | yes | yes | yes |
+| `user` | no | yes | no | no | no |
 
-Users are created and managed from the admin dashboard.
+Users are created and managed from the admin dashboard. Admins can also see which user uploaded each file.
 
 ---
 
@@ -299,6 +302,15 @@ cd securefiles
 cd frontend
 npm test
 ```
+
+---
+
+## Features
+
+- **Multi-file upload** — select or drag-and-drop multiple files at once; uploads submit automatically when files are dropped
+- **Gallery view** — regular users see files in a visual gallery with inline preview and download
+- **Uploader tracking** — admins can see which user uploaded each file
+- **Persistent storage** — PostgreSQL and MinIO data is stored in named Docker volumes and survives container restarts
 
 ---
 
