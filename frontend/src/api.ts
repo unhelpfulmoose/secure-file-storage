@@ -4,7 +4,7 @@
 import axios from 'axios';
 
 // Backend URL — defaults to localhost. Override by setting VITE_API_URL in a .env.local file.
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
+const API_URL = import.meta.env['VITE_API_URL'] ?? 'http://localhost:8080';
 
 // The JWT token is stored here after login and cleared on logout.
 // It is attached to every request that requires authentication.
