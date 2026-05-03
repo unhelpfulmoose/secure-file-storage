@@ -41,6 +41,8 @@ services:
     build: ./securefiles
     env_file: .env
     environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
       MINIO_ENDPOINT: http://minio:9000
       REDIS_HOST: redis
       CORS_ORIGIN: http://localhost:5173
