@@ -62,7 +62,7 @@ public class FileService {
     }
 
     @Transactional
-    public FileMetadata saveFile(MultipartFile file) throws Exception {
+    public FileMetadata saveFile(MultipartFile file, String uploadedBy) throws Exception {
         // Validate filename
         String fileName = file.getOriginalFilename();
         if (fileName == null || fileName.isBlank()) {
@@ -93,6 +93,7 @@ public class FileService {
         metadata.setFileType(detectedType);
         metadata.setStorageKey(storageKey);
         metadata.setUploadAt(LocalDateTime.now());
+        metadata.setUploadedBy(uploadedBy);
         metadata.setEncryptionKey(encodedWrappedKey);
         fileRepository.save(metadata);
 

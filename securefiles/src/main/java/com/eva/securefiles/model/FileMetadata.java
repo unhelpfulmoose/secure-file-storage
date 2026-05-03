@@ -19,6 +19,7 @@ public class FileMetadata {
     private String storageKey;
 
     private LocalDateTime uploadAt;
+    private String uploadedBy;
 
     @JsonIgnore
     private String encryptionKey;
@@ -28,6 +29,7 @@ public class FileMetadata {
     public String getFileType() { return fileType; }
     public String getStorageKey() { return storageKey; }
     public LocalDateTime getUploadAt() { return uploadAt; }
+    public String getUploadedBy() { return uploadedBy; }
     public String getEncryptionKey() { return encryptionKey; }
 
     public void setId(Long id) { this.id = id; }
@@ -35,5 +37,6 @@ public class FileMetadata {
     public void setFileType(String fileType) { this.fileType = fileType; }
     public void setStorageKey(String storageKey) { this.storageKey = storageKey; }
     public void setUploadAt(LocalDateTime uploadAt) { this.uploadAt = uploadAt; }
+    public void setUploadedBy(String uploadedBy) { this.uploadedBy = uploadedBy; }
     public void setEncryptionKey(String encryptionKey) { this.encryptionKey = encryptionKey; }
 }

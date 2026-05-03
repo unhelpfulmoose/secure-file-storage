@@ -8,10 +8,11 @@ import FilePreview from './FilePreview';
 
 interface Props {
   canDelete?: boolean;
+  showUploader?: boolean;
   refreshKey?: number;  // increment this from the parent to trigger a refresh
 }
 
-function FileList({ canDelete = false, refreshKey = 0 }: Props) {
+function FileList({ canDelete = false, showUploader = false, refreshKey = 0 }: Props) {
   const [files, setFiles] = useState<FileMetadata[]>([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -89,6 +90,7 @@ function FileList({ canDelete = false, refreshKey = 0 }: Props) {
                 <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ccc' }}>Name</th>
                 <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ccc' }}>Type</th>
                 <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ccc' }}>Uploaded</th>
+                {showUploader && <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ccc' }}>Uploaded by</th>}
                 <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #ccc' }}>Actions</th>
               </tr>
             </thead>
@@ -98,6 +100,7 @@ function FileList({ canDelete = false, refreshKey = 0 }: Props) {
                   <td style={{ padding: '0.5rem' }}>{file.fileName}</td>
                   <td style={{ padding: '0.5rem' }}>{file.fileType}</td>
                   <td style={{ padding: '0.5rem' }}>{new Date(file.uploadAt).toLocaleDateString()}</td>
+                  {showUploader && <td style={{ padding: '0.5rem' }}>{file.uploadedBy ?? '—'}</td>}
                   <td style={{ padding: '0.5rem', display: 'flex', gap: '0.5rem' }}>
                     <button onClick={() => setPreviewFile(file)}>Open</button>
                     <button onClick={() => handleDownload(file.id, file.fileName)}>Download</button>

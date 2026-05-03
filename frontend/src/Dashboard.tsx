@@ -166,7 +166,7 @@ function FilesSection() {
           </p>
         )}
       </div>
-      <FileList canDelete refreshKey={refreshKey} />
+      <FileList canDelete showUploader refreshKey={refreshKey} />
     </div>
   );
 }

@@ -21,6 +21,7 @@ export type FileMetadata = {
     fileName: string;
     fileType: string;
     uploadAt: string;
+    uploadedBy: string | null;
 };
 
 export type AppUser = {

@@ -26,7 +26,7 @@ public class FileController {
     public ResponseEntity<FileMetadata> uploadFile(@RequestParam("file") MultipartFile file,
                                                    Authentication authentication) throws Exception {
         try {
-            FileMetadata saved = fileService.saveFile(file);
+            FileMetadata saved = fileService.saveFile(file, authentication.getName());
             auditService.fileUploaded(authentication.getName(), saved.getFileName(), saved.getId());
             return ResponseEntity.ok(saved);
         } catch (IllegalArgumentException e) {
