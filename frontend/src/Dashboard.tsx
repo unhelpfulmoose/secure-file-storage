@@ -1,7 +1,7 @@
 // Admin dashboard with left sidebar navigation.
 // Sections: Overview (stats + recent activity), Files, Users, Audit Log.
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { uploadFile, getFiles, getUsers, getAuditLog } from './api';
 import FileList from './FileList';
 import UserManagement from './UserManagement';
@@ -123,43 +123,111 @@ function Overview() {
 // Files section
 
 function FilesSection() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [message, setMessage] = useState('');
   const [uploading, setUploading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [draggingOver, setDraggingOver] = useState(false);
+  const dragCounter = useRef(0);
 
-  const handleUpload = async () => {
-    if (!selectedFile) {
-      setMessage('Please select a file first.');
-      return;
-    }
+  useEffect(() => {
+    const onDragEnter = () => {
+      dragCounter.current++;
+      setDraggingOver(true);
+    };
+    const onDragLeave = () => {
+      dragCounter.current--;
+      if (dragCounter.current === 0) setDraggingOver(false);
+    };
+    const onDragOver = (e: DragEvent) => e.preventDefault();
+    const onDrop = (e: DragEvent) => {
+      e.preventDefault();
+      dragCounter.current = 0;
+      setDraggingOver(false);
+    };
+
+    window.addEventListener('dragenter', onDragEnter);
+    window.addEventListener('dragleave', onDragLeave);
+    window.addEventListener('dragover', onDragOver);
+    window.addEventListener('drop', onDrop);
+
+    return () => {
+      window.removeEventListener('dragenter', onDragEnter);
+      window.removeEventListener('dragleave', onDragLeave);
+      window.removeEventListener('dragover', onDragOver);
+      window.removeEventListener('drop', onDrop);
+    };
+  }, []);
+
+  const handleFiles = async (files: FileList) => {
+    const fileArray = Array.from(files);
+    if (fileArray.length === 0) return;
     setUploading(true);
     setMessage('');
-    try {
-      await uploadFile(selectedFile);
-      setMessage('File uploaded successfully!');
-      setSelectedFile(null);
-      setRefreshKey(k => k + 1);
-    } catch {
-      setMessage('Upload failed.');
-    } finally {
-      setUploading(false);
+    const results = await Promise.allSettled(fileArray.map(f => uploadFile(f)));
+    const failed = results.filter(r => r.status === 'rejected').length;
+    setRefreshKey(k => k + 1);
+    setUploading(false);
+    if (failed === 0) {
+      setMessage(`${fileArray.length} file${fileArray.length > 1 ? 's' : ''} uploaded successfully!`);
+    } else {
+      setMessage(`${fileArray.length - failed} uploaded, ${failed} failed.`);
     }
   };
 
   return (
     <div>
+      {draggingOver && (
+        <div
+          onDrop={e => {
+            e.preventDefault();
+            dragCounter.current = 0;
+            setDraggingOver(false);
+            void handleFiles(e.dataTransfer.files);
+          }}
+          onDragOver={e => e.preventDefault()}
+          style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(59,130,246,0.1)',
+            border: '3px dashed var(--accent)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.5rem',
+            fontWeight: 600,
+            color: 'var(--accent)',
+            pointerEvents: 'all',
+          }}
+        >
+          Drop files to upload
+        </div>
+      )}
+
       <h2>Files</h2>
       <div style={{ marginBottom: '2rem' }}>
         <h3>Upload</h3>
-        <input
-          type="file"
-          onChange={e => setSelectedFile(e.target.files?.[0] || null)}
-          style={{ marginBottom: '1rem', display: 'block' }}
-        />
-        <button onClick={handleUpload} disabled={uploading}>
-          {uploading ? 'Uploading…' : 'Upload'}
-        </button>
+        <label style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: '2px dashed var(--border)',
+          borderRadius: '8px',
+          padding: '2rem',
+          marginBottom: '1rem',
+          cursor: 'pointer',
+          color: 'var(--text-muted)',
+        }}>
+          <span style={{ marginBottom: '0.4rem' }}>Click to select files, or drag and drop anywhere on the page</span>
+          <span style={{ fontSize: '0.8rem' }}>PDF, images, text, audio, video — max 10 MB each</span>
+          <input
+            type="file"
+            multiple
+            style={{ display: 'none' }}
+            onChange={e => { if (e.target.files) void handleFiles(e.target.files); }}
+          />
+        </label>
+        {uploading && <p>Uploading...</p>}
         {message && (
           <p style={{ color: message.includes('failed') ? 'red' : 'green', marginTop: '0.5rem' }}>
             {message}
