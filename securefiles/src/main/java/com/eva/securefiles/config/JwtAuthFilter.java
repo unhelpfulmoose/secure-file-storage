@@ -86,7 +86,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String jti = jwtService.extractJti(claims);
             if (tokenDenylistService.isDenied(jti)) {
                 auditService.revokedToken(username, request.getRemoteAddr());
-                chain.doFilter(request, response);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
                 return;
             }
 

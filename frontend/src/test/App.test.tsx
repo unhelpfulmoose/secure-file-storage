@@ -29,7 +29,8 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Login' }))
 
     await waitFor(() => {
-      expect(screen.getByText('Admin Dashboard')).toBeInTheDocument()
+      // Audit Log nav item is only present in the admin dashboard
+      expect(screen.getByRole('button', { name: 'Audit Log' })).toBeInTheDocument()
     })
   })
 
@@ -44,7 +45,9 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Login' }))
 
     await waitFor(() => {
-      expect(screen.getByText('File Storage')).toBeInTheDocument()
+      // The user dashboard shows a Files heading but has no Audit Log nav item
+      expect(screen.getByRole('heading', { name: 'Files' })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Audit Log' })).not.toBeInTheDocument()
     })
   })
 })

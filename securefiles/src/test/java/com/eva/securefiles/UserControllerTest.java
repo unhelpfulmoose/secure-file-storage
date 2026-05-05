@@ -1,6 +1,7 @@
 package com.eva.securefiles;
 
 import com.eva.securefiles.service.TokenDenylistService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,6 +20,9 @@ class UserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockBean
     private TokenDenylistService tokenDenylistService;
@@ -92,6 +96,38 @@ class UserControllerTest {
     @WithMockUser(username = "user", roles = "USER")
     void testDeleteUserAsUserForbidden() throws Exception {
         mockMvc.perform(delete("/users/1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = "ADMIN")
+    void testChangePassword() throws Exception {
+        String createResponse = mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"username": "pwchangeuser", "password": "oldpassword", "role": "USER"}
+                                """))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        long userId = objectMapper.readTree(createResponse).get("id").asLong();
+
+        mockMvc.perform(patch("/users/" + userId + "/password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"newPassword": "newpassword456"}
+                                """))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(username = "user", roles = "USER")
+    void testChangePasswordAsUserForbidden() throws Exception {
+        mockMvc.perform(patch("/users/1/password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"newPassword": "hacked"}
+                                """))
                 .andExpect(status().isForbidden());
     }
 }
