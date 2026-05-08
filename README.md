@@ -1,6 +1,16 @@
 # Secure File Storage & Delivery System
 Examensarbete Java24 — A full-stack application for securely uploading, storing, and downloading files with AES-256 encryption at rest.
 
+
+## Features
+
+- **Multi-file upload** — select or drag-and-drop multiple files at once; uploads submit automatically when files are dropped
+- **Gallery view** — regular users see files in a visual gallery with inline preview and download
+- **Uploader tracking** — admins can see which user uploaded each file
+- **Persistent storage** — PostgreSQL and MinIO data is stored in named Docker volumes and survives container restarts
+
+---
+
 ## Getting started
 
 ```bash
@@ -35,6 +45,16 @@ To stop:
 ```bash
 docker compose down
 ```
+
+---
+
+## What a successful startup looks like
+
+- PostgreSQL, MinIO, and Redis are running (Docker containers show as `Up`)
+- The backend starts without errors and prints something like `Started SecurefilesApplication`
+- The frontend opens at `http://localhost:5173` and shows a login form
+
+If the backend fails to start, check that all environment variables are set and that all three services are running before the backend.
 
 ---
 
@@ -84,35 +104,6 @@ A template with all variables is provided in `.env.example`. Copy it and fill in
 cp .env.example .env
 ```
 
-### Option A — IntelliJ (recommended for backend)
-
-You set the variables once in IntelliJ and they are used every time you run the backend from there.
-
-1. Open the `securefiles/` project in IntelliJ
-2. Click **Run → Edit Configurations...**
-3. Select your Spring Boot run configuration (or create one if it doesn't exist: click **+** → **Spring Boot**, set Main class to `com.eva.securefiles.SecurefilesApplication`)
-4. Find the **Environment variables** field and click the icon on the right to open the editor
-5. Add each variable as `NAME=value` (use the values from your `.env` file)
-6. Click **OK**
-
-### Option B — Terminal
-
-Load the variables from your `.env` file:
-
-```bash
-set -a; source .env; set +a
-```
-
-This exports all variables for the current terminal session. You will need to run it again if you open a new terminal.
-
-To verify a variable was loaded:
-```bash
-echo $DB_PASSWORD
-```
-The app will fail to start with a clear error if any of these are missing.
-
----
-
 ## Startup order
 
 Start services in this order — the backend will fail to start if PostgreSQL, MinIO, or Redis is not running:
@@ -122,130 +113,6 @@ Start services in this order — the backend will fail to start if PostgreSQL, M
 3. Redis
 4. Backend — press the green play button in IntelliJ, or run `./mvnw spring-boot:run` in the terminal from the `securefiles/` folder
 5. Frontend — run `npm run dev` in a terminal (VS Code's built-in terminal works well) from the `frontend/` folder
-
----
-
-## Running PostgreSQL
-
-The app expects PostgreSQL on port `5434` (not the default 5432 — this avoids conflicts if you already have PostgreSQL installed). Run it with Docker:
-
-```bash
-docker run -d \
-  -p 5434:5432 \
-  --name postgres \
-  -e POSTGRES_PASSWORD="$DB_PASSWORD" \
-  -e POSTGRES_DB=securefiles \
-  postgres:16
-```
-
-The app connects as user `postgres` to a database named `securefiles`. Flyway will create the tables automatically on first startup.
-
----
-
-## Running Redis
-
-Redis is used to store revoked JWT tokens so logout takes effect immediately.
-
-```bash
-docker run -d -p "$REDIS_PORT":6379 --name redis redis:7
-```
-
----
-
-## Running MinIO
-
-MinIO is an open-source S3-compatible object store used to store encrypted files. Run it with Docker:
-
-```bash
-docker run -d \
-  -p 9000:9000 \
-  -p 9001:9001 \
-  --name minio \
-  -e MINIO_ROOT_USER="$MINIO_ACCESS_KEY" \
-  -e MINIO_ROOT_PASSWORD="$MINIO_SECRET_KEY" \
-  quay.io/minio/minio server /data --console-address ":9001"
-```
-
-The app automatically creates the bucket on startup if it doesn't exist. The MinIO console is available at `http://localhost:9001`.
-
----
-
-## Subsequent startups
-
-The `docker run` commands above only need to be run once — they create the containers. On future startups, just start the existing containers:
-
-```bash
-docker start postgres redis minio
-```
-
-To check if they are already running:
-```bash
-docker ps
-```
-
----
-
-## Running the backend
-
-**IntelliJ:** Press the green play button. Make sure your run configuration has all environment variables set (see above).
-
-**Terminal (development):**
-
-`./mvnw spring-boot:run` compiles and runs in one step — convenient during development but requires write access to the `target/` directory.
-
-If you get a "permission denied" error, first run:
-```bash
-chmod +x mvnw
-```
-Then:
-```bash
-cd securefiles
-./mvnw spring-boot:run
-```
-
-**Terminal (production / minimal permissions):**
-
-Split into a build step (requires write access) and a run step (no write access needed):
-
-```bash
-cd securefiles
-./mvnw clean package -DskipTests   # build once — needs write access to target/
-java -jar target/*.jar              # run without write permissions
-```
-
-The terminal must stay open while the backend is running. The backend is ready when you see `Started SecurefilesApplication` in the output.
-
-The API will be available at `http://localhost:${SERVER_PORT}` (default: `http://localhost:8080`).
-
----
-
-## Running the frontend
-
-**VS Code:** Open the `frontend/` folder, then open the built-in terminal (**Terminal → New Terminal**) and run:
-
-```bash
-npm install
-npm run dev
-```
-
-**Any terminal:**
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-`npm install` only needs to be run once (or after pulling new changes). After that, `npm run dev` is enough.
-
-The terminal must stay open while the frontend is running.
-
-The frontend will be available at `http://localhost:5173`.
-
-By default the frontend points to `http://localhost:8080`. To use a different backend URL, create a `frontend/.env.local` file:
-
-```
-VITE_API_URL=http://your-backend-url
-```
 
 ---
 
@@ -269,48 +136,6 @@ Once everything is running, open `http://localhost:5173` in your browser. Use th
 | `admin` | value of `ADMIN_PASSWORD` | Can upload, preview, download, delete files, and manage users |
 
 The admin account is created automatically on first startup. Additional users can be created from the admin dashboard.
-
----
-
-## What a successful startup looks like
-
-- PostgreSQL, MinIO, and Redis are running (Docker containers show as `Up`)
-- The backend starts without errors and prints something like `Started SecurefilesApplication`
-- The frontend opens at `http://localhost:5173` and shows a login form
-
-If the backend fails to start, check that all environment variables are set and that all three services are running before the backend.
-
----
-
-## Running tests
-
-Tests require a live PostgreSQL instance and the following environment variables to be set: `DB_PASSWORD`, `ADMIN_PASSWORD`, `JWT_SECRET`.
-
-**IntelliJ:** Right-click the `src/test` folder and choose **Run All Tests**. Make sure your run configuration has the required environment variables set.
-
-**Terminal:**
-```bash
-cd securefiles
-./mvnw test
-```
-
----
-
-## Running frontend tests
-
-```bash
-cd frontend
-npm test
-```
-
----
-
-## Features
-
-- **Multi-file upload** — select or drag-and-drop multiple files at once; uploads submit automatically when files are dropped
-- **Gallery view** — regular users see files in a visual gallery with inline preview and download
-- **Uploader tracking** — admins can see which user uploaded each file
-- **Persistent storage** — PostgreSQL and MinIO data is stored in named Docker volumes and survives container restarts
 
 ---
 
